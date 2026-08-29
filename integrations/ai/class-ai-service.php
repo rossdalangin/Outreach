@@ -13,12 +13,49 @@ class AI_Service {
         $settings = get_option('cc_outreach_settings', array());
         $provider_type = !empty($settings['ai_provider']) ? $settings['ai_provider'] : 'openai';
 
-        if ($provider_type === 'openai') {
-            return new OpenAI_Provider($settings);
+        if ($provider_type === 'anthropic') {
+            return new Anthropic_Provider($settings);
         }
 
-        // Fallback / default provider
         return new OpenAI_Provider($settings);
+    }
+
+    /**
+     * AI Lead Fit Scoring (0-100)
+     */
+    public static function score_lead($lead) {
+        $provider = self::get_provider();
+
+        $system_prompt = "You are a lead qualification specialist for CloseClient. "
+            . "Evaluate the lead against CloseClient's ideal customer profile (coaches, consultants, agencies needing website redesign & lead gen). "
+            . "Output JSON with keys: 'score' (integer 0-100), 'reasoning' (1-2 sentences).";
+
+        $prompt = sprintf(
+            "Lead Name: %s %s\nCompany: %s\nWebsite: %s\nNiche: %s\nNotes: %s",
+            $lead['first_name'], $lead['last_name'], $lead['company_name'],
+            $lead['website'], $lead['niche'], $lead['notes']
+        );
+
+        $result = $provider->generate($prompt, $system_prompt);
+
+        if (is_wp_error($result)) {
+            // Rule-based heuristic score fallback
+            $score = 70;
+            if (stripos($lead['niche'], 'coach') !== false || stripos($lead['niche'], 'consultant') !== false) {
+                $score += 20;
+            }
+            if (!empty($lead['website'])) {
+                $score += 5;
+            }
+            return array('score' => min($score, 100), 'reasoning' => 'Heuristic fit score based on target coaching/consultant niche match.');
+        }
+
+        $decoded = json_decode($result, true);
+        if ($decoded && isset($decoded['score'])) {
+            return $decoded;
+        }
+
+        return array('score' => 75, 'reasoning' => $result);
     }
 
     /**

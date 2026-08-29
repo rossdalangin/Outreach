@@ -94,7 +94,69 @@ jQuery(document).ready(function($) {
     });
 
     $('.cc-modal-close').on('click', function() {
-        $('#cc-add-lead-modal').hide();
+        $('.cc-modal').hide();
+    });
+
+    // Campaign modal
+    $('#cc-btn-open-add-campaign-modal').on('click', function(e) {
+        e.preventDefault();
+        $('#cc-add-campaign-modal').show();
+    });
+
+    $('#cc-form-add-campaign').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serializeArray();
+        var postData = {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'create_campaign',
+            nonce: ccOutreachVars.nonce
+        };
+        $.each(formData, function(i, field) {
+            postData[field.name] = field.value;
+        });
+
+        $.post(ccOutreachVars.ajax_url, postData, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
+    // Rule modal
+    $('#cc-btn-open-add-rule-modal').on('click', function(e) {
+        e.preventDefault();
+        $('#cc-add-rule-modal').show();
+    });
+
+    $('#cc-form-add-rule').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serializeArray();
+        var postData = {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'create_rule',
+            nonce: ccOutreachVars.nonce
+        };
+        $.each(formData, function(i, field) {
+            postData[field.name] = field.value;
+        });
+
+        $.post(ccOutreachVars.ajax_url, postData, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
+    // CSV Export
+    $('#cc-btn-export-leads-csv').on('click', function(e) {
+        e.preventDefault();
+        window.location.href = ccOutreachVars.ajax_url + '?action=cc_outreach_ajax_action&sub_action=export_leads_csv&nonce=' + ccOutreachVars.nonce;
     });
 
     $('#cc-form-add-lead').on('submit', function(e) {

@@ -17,6 +17,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
 <div class="wrap cc-outreach-wrap">
     <h1 class="wp-heading-inline">Lead Management</h1>
     <button class="page-title-action" id="cc-btn-open-add-lead-modal">Add New Lead</button>
+    <button class="page-title-action" id="cc-btn-export-leads-csv">Export CSV</button>
     <hr class="wp-header-end">
 
     <div class="tablenav top">

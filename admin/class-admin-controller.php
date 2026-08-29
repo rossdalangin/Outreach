@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) {
 use CloseClient\Outreach\Security\Security_Helper;
 use CloseClient\Outreach\Includes\Models\Lead;
 use CloseClient\Outreach\Includes\Models\Queue;
+use CloseClient\Outreach\Includes\Models\Campaign;
+use CloseClient\Outreach\Includes\Models\Rule;
 use CloseClient\Outreach\Includes\Models\Activity_Log;
 use CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service;
 use CloseClient\Outreach\Integrations\AI\AI_Service;
@@ -109,6 +111,12 @@ class Admin_Controller {
                 $input['ai_api_key'] = isset($settings['ai_api_key']) ? $settings['ai_api_key'] : '';
             }
 
+            if (!empty($_POST['settings']['anthropic_api_key'])) {
+                $input['anthropic_api_key'] = Security_Helper::encrypt(sanitize_text_field($_POST['settings']['anthropic_api_key']));
+            } else {
+                $input['anthropic_api_key'] = isset($settings['anthropic_api_key']) ? $settings['anthropic_api_key'] : '';
+            }
+
             $input['kill_switch'] = !empty($_POST['settings']['kill_switch']) ? true : false;
 
             update_option('cc_outreach_settings', array_merge($settings, $input));
@@ -195,6 +203,46 @@ class Admin_Controller {
                 Activity_Log::log('status_changed', $lead_id, 'Status updated to ' . $status);
                 wp_send_json_success(__('Status updated.', 'closeclient-outreach'));
                 break;
+
+            case 'create_campaign':
+                $name   = sanitize_text_field($_POST['name']);
+                $niche  = sanitize_text_field($_POST['target_niche']);
+                $desc   = sanitize_text_field($_POST['description']);
+                $id = Campaign::insert(array(
+                    'name'         => $name,
+                    'target_niche' => $niche,
+                    'description'  => $desc,
+                    'status'       => 'active',
+                ));
+                Activity_Log::log('campaign_created', 0, 'Campaign: ' . $name);
+                wp_send_json_success(array('id' => $id, 'message' => __('Campaign created!', 'closeclient-outreach')));
+                break;
+
+            case 'create_rule':
+                $name   = sanitize_text_field($_POST['name']);
+                $cond   = sanitize_text_field($_POST['condition_status']);
+                $action = sanitize_text_field($_POST['action_type']);
+                $id = Rule::insert(array(
+                    'name'             => $name,
+                    'condition_status' => $cond,
+                    'action_type'      => $action,
+                    'is_active'        => 1,
+                ));
+                Activity_Log::log('rule_created', 0, 'Rule: ' . $name);
+                wp_send_json_success(array('id' => $id, 'message' => __('Automation Rule created!', 'closeclient-outreach')));
+                break;
+
+            case 'export_leads_csv':
+                $leads = Lead::query(array('number' => 10000));
+                header('Content-Type: text/csv; charset=utf-8');
+                header('Content-Disposition: attachment; filename=closeclient_leads_' . date('Y-m-d') . '.csv');
+                $output = fopen('php://output', 'w');
+                fputcsv($output, array('ID', 'Lead ID', 'First Name', 'Last Name', 'Company', 'Email', 'Website', 'Niche', 'Status', 'Last Contact'));
+                foreach ($leads as $l) {
+                    fputcsv($output, array($l['id'], $l['lead_id'], $l['first_name'], $l['last_name'], $l['company_name'], $l['email'], $l['website'], $l['niche'], $l['status'], $l['last_contact_date']));
+                }
+                fclose($output);
+                exit;
 
             default:
                 wp_send_json_error(__('Invalid action.', 'closeclient-outreach'));

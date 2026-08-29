@@ -42,6 +42,7 @@ class Plugin {
 
     private function define_public_hooks() {
         add_action('cc_outreach_cron_event', array($this, 'run_cron_tasks'));
+        add_action('rest_api_init', array('CloseClient\\Outreach\\Includes\\REST_API', 'register_routes'));
     }
 
     public function register_admin_menu() {

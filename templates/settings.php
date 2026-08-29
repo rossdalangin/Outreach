@@ -52,7 +52,14 @@ $masked_key = !empty($api_key) ? substr($api_key, 0, 7) . '...' . substr($api_ke
                     <td>
                         <select id="ai_provider" name="settings[ai_provider]">
                             <option value="openai" <?php selected(!empty($settings['ai_provider']) && $settings['ai_provider'] === 'openai'); ?>>OpenAI API</option>
+                            <option value="anthropic" <?php selected(!empty($settings['ai_provider']) && $settings['ai_provider'] === 'anthropic'); ?>>Anthropic Claude API</option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="anthropic_api_key">Anthropic API Key</label></th>
+                    <td>
+                        <input type="password" id="anthropic_api_key" name="settings[anthropic_api_key]" value="<?php echo esc_attr(!empty($settings['anthropic_api_key']) ? \CloseClient\Outreach\Security\Security_Helper::decrypt($settings['anthropic_api_key']) : ''); ?>" class="regular-text" placeholder="sk-ant-..." />
                     </td>
                 </tr>
                 <tr>

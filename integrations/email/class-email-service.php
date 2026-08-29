@@ -80,6 +80,51 @@ class Email_Service {
     }
 
     /**
+     * Check if current time is within configured sending window
+     */
+    public static function is_within_sending_window() {
+        $settings = get_option('cc_outreach_settings', array());
+
+        $start_time = !empty($settings['sending_window_start']) ? $settings['sending_window_start'] : '09:00';
+        $end_time   = !empty($settings['sending_window_end']) ? $settings['sending_window_end'] : '17:00';
+
+        $current_time = current_time('H:i');
+        $current_day  = current_time('N'); // 1 (Mon) to 7 (Sun)
+
+        // Weekend check if weekend sending disabled (default disabled on weekends 6 & 7)
+        $allow_weekends = !empty($settings['allow_weekend_sending']);
+        if (!$allow_weekends && ($current_day == 6 || $current_day == 7)) {
+            return false;
+        }
+
+        if ($current_time >= $start_time && $current_time <= $end_time) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Replace dynamic merge tags in text
+     */
+    public static function replace_merge_tags($text, $lead) {
+        if (empty($text) || !is_array($lead)) {
+            return $text;
+        }
+
+        $tags = array(
+            '{first_name}'   => !empty($lead['first_name']) ? $lead['first_name'] : '',
+            '{last_name}'    => !empty($lead['last_name']) ? $lead['last_name'] : '',
+            '{company_name}' => !empty($lead['company_name']) ? $lead['company_name'] : 'your company',
+            '{website}'      => !empty($lead['website']) ? $lead['website'] : '',
+            '{niche}'        => !empty($lead['niche']) ? $lead['niche'] : 'coaching/consulting',
+            '{location}'     => !empty($lead['location']) ? $lead['location'] : '',
+        );
+
+        return str_replace(array_keys($tags), array_values($tags), $text);
+    }
+
+    /**
      * Send email via wp_mail
      */
     public static function send_email($queue_id) {
