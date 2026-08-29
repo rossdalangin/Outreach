@@ -1,0 +1,101 @@
+<?php
+if (!defined('ABSPATH')) exit;
+
+use CloseClient\Outreach\Includes\Models\Lead;
+use CloseClient\Outreach\Automation\Status_Workflow;
+
+$status_filter = isset($_GET['status_filter']) ? sanitize_text_field($_GET['status_filter']) : '';
+$search        = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+
+$leads = Lead::query(array(
+    'status' => $status_filter,
+    'search' => $search,
+    'number' => 50,
+));
+$all_statuses = Status_Workflow::get_all_statuses();
+?>
+<div class="wrap cc-outreach-wrap">
+    <h1 class="wp-heading-inline">Lead Management</h1>
+    <button class="page-title-action" id="cc-btn-open-add-lead-modal">Add New Lead</button>
+    <hr class="wp-header-end">
+
+    <div class="tablenav top">
+        <form method="get" action="">
+            <input type="hidden" name="page" value="closeclient-outreach-leads" />
+            <div class="alignleft actions">
+                <select name="status_filter">
+                    <option value="">-- All Statuses --</option>
+                    <?php foreach ($all_statuses as $st => $label): ?>
+                        <option value="<?php echo esc_attr($st); ?>" <?php selected($status_filter, $st); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="submit" class="button" value="Filter" />
+            </div>
+            <p class="search-box">
+                <input type="search" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search leads..." />
+                <input type="submit" class="button" value="Search Leads" />
+            </p>
+        </form>
+    </div>
+
+    <table class="wp-list-table widefat fixed striped">
+        <thead>
+            <tr>
+                <th>Lead ID</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Email / Website</th>
+                <th>Niche</th>
+                <th>Status</th>
+                <th>Last Contact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($leads)): ?>
+                <?php foreach ($leads as $l): ?>
+                    <tr>
+                        <td><code><?php echo esc_html($l['lead_id'] ? $l['lead_id'] : '#' . $l['id']); ?></code></td>
+                        <td><strong><?php echo esc_html($l['first_name'] . ' ' . $l['last_name']); ?></strong></td>
+                        <td><?php echo esc_html($l['company_name']); ?></td>
+                        <td>
+                            <a href="mailto:<?php echo esc_attr($l['email']); ?>"><?php echo esc_html($l['email']); ?></a><br>
+                            <small><a href="<?php echo esc_url($l['website']); ?>" target="_blank"><?php echo esc_html($l['website']); ?></a></small>
+                        </td>
+                        <td><span class="cc-badge"><?php echo esc_html($l['niche']); ?></span></td>
+                        <td><span class="cc-status-badge status-<?php echo esc_attr(sanitize_html_class(strtolower(str_replace(' ', '-', $l['status'])))); ?>"><?php echo esc_html($l['status']); ?></span></td>
+                        <td><?php echo esc_html($l['last_contact_date'] ? $l['last_contact_date'] : 'Never'); ?></td>
+                        <td>
+                            <button class="button button-small cc-btn-gen-draft" data-lead-id="<?php echo esc_attr($l['id']); ?>">Gen Draft</button>
+                            <select class="cc-select-quick-status" data-lead-id="<?php echo esc_attr($l['id']); ?>">
+                                <option value="">Change Status...</option>
+                                <?php foreach ($all_statuses as $st => $lbl): ?>
+                                    <option value="<?php echo esc_attr($st); ?>"><?php echo esc_html($lbl); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="8">No leads found matching criteria.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+
+    <!-- Add Lead Modal -->
+    <div id="cc-add-lead-modal" class="cc-modal" style="display:none;">
+        <div class="cc-modal-content">
+            <span class="cc-modal-close">&times;</span>
+            <h2>Add New Outreach Lead</h2>
+            <form id="cc-form-add-lead">
+                <p><label>First Name:</label><input type="text" name="first_name" required class="widefat"></p>
+                <p><label>Last Name:</label><input type="text" name="last_name" class="widefat"></p>
+                <p><label>Company Name:</label><input type="text" name="company_name" class="widefat"></p>
+                <p><label>Email Address:</label><input type="email" name="email" required class="widefat"></p>
+                <p><label>Website URL:</label><input type="url" name="website" class="widefat"></p>
+                <p><label>Niche:</label><input type="text" name="niche" placeholder="Business Coach, Consultant, etc." class="widefat"></p>
+                <p><button type="submit" class="button button-primary">Save Lead</button></p>
+            </form>
+        </div>
+    </div>
+</div>
