@@ -23,6 +23,20 @@ $masked_key = !empty($api_key) ? substr($api_key, 0, 7) . '...' . substr($api_ke
             </label>
         </div>
 
+        <!-- Webhook & API Key Settings -->
+        <div class="cc-card">
+            <h2><span class="dashicons dashicons-rest-api"></span> Webhook & Secret Token Settings</h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="webhook_secret">Inbound Webhook Secret</label></th>
+                    <td>
+                        <input type="text" id="webhook_secret" name="settings[webhook_secret]" value="<?php echo esc_attr(!empty($settings['webhook_secret']) ? $settings['webhook_secret'] : ''); ?>" class="regular-text" placeholder="e.g. cc_sec_token_12345" />
+                        <p class="description">Set a secret token used in <code>X-CC-Token</code> header or <code>secret_token</code> parameter for remote reply webhooks.</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
         <!-- Google Sheets Integration -->
         <div class="cc-card">
             <h2><span class="dashicons dashicons-google"></span> Google Sheets Integration</h2>
@@ -38,6 +52,13 @@ $masked_key = !empty($api_key) ? substr($api_key, 0, 7) . '...' . substr($api_ke
                     <th scope="row"><label for="gs_tab">Worksheet / Tab Name</label></th>
                     <td>
                         <input type="text" id="gs_tab" name="settings[google_sheets_tab]" value="<?php echo esc_attr(!empty($settings['google_sheets_tab']) ? $settings['google_sheets_tab'] : 'Leads'); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gs_webhook">Google Apps Script Webhook (Write-Back)</label></th>
+                    <td>
+                        <input type="url" id="gs_webhook" name="settings[google_sheets_webhook_url]" value="<?php echo esc_attr(!empty($settings['google_sheets_webhook_url']) ? $settings['google_sheets_webhook_url'] : ''); ?>" class="regular-text" placeholder="https://script.google.com/macros/s/.../exec" />
+                        <p class="description">Optional Google Apps Script Webhook URL to automatically update rows in Google Sheets when outreach status changes.</p>
                     </td>
                 </tr>
             </table>

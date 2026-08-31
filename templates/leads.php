@@ -67,13 +67,9 @@ $all_statuses = Status_Workflow::get_all_statuses();
                         <td><span class="cc-status-badge status-<?php echo esc_attr(sanitize_html_class(strtolower(str_replace(' ', '-', $l['status'])))); ?>"><?php echo esc_html($l['status']); ?></span></td>
                         <td><?php echo esc_html($l['last_contact_date'] ? $l['last_contact_date'] : 'Never'); ?></td>
                         <td>
-                            <button class="button button-small cc-btn-gen-draft" data-lead-id="<?php echo esc_attr($l['id']); ?>">Gen Draft</button>
-                            <select class="cc-select-quick-status" data-lead-id="<?php echo esc_attr($l['id']); ?>">
-                                <option value="">Change Status...</option>
-                                <?php foreach ($all_statuses as $st => $lbl): ?>
-                                    <option value="<?php echo esc_attr($st); ?>"><?php echo esc_html($lbl); ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                            <button class="button button-small cc-btn-gen-draft" data-lead-id="<?php echo esc_attr($l['id']); ?>">Draft</button>
+                            <button class="button button-small cc-btn-edit-lead" data-lead="<?php echo esc_attr(json_encode($l)); ?>">Edit</button>
+                            <button class="button button-small button-link-delete cc-btn-delete-lead" data-lead-id="<?php echo esc_attr($l['id']); ?>">Delete</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -82,6 +78,32 @@ $all_statuses = Status_Workflow::get_all_statuses();
             <?php endif; ?>
         </tbody>
     </table>
+
+    <!-- Edit Lead Modal -->
+    <div id="cc-edit-lead-modal" class="cc-modal" style="display:none;">
+        <div class="cc-modal-content">
+            <span class="cc-modal-close">&times;</span>
+            <h2>Edit Outreach Lead</h2>
+            <form id="cc-form-edit-lead">
+                <input type="hidden" name="lead_id" id="edit_lead_id">
+                <p><label>First Name:</label><input type="text" name="first_name" id="edit_first_name" required class="widefat"></p>
+                <p><label>Last Name:</label><input type="text" name="last_name" id="edit_last_name" class="widefat"></p>
+                <p><label>Company Name:</label><input type="text" name="company_name" id="edit_company_name" class="widefat"></p>
+                <p><label>Email Address:</label><input type="email" name="email" id="edit_email" required class="widefat"></p>
+                <p><label>Website URL:</label><input type="url" name="website" id="edit_website" class="widefat"></p>
+                <p><label>Niche:</label><input type="text" name="niche" id="edit_niche" class="widefat"></p>
+                <p><label>Status:</label>
+                    <select name="status" id="edit_status" class="widefat">
+                        <?php foreach ($all_statuses as $st => $lbl): ?>
+                            <option value="<?php echo esc_attr($st); ?>"><?php echo esc_html($lbl); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </p>
+                <p><label>Notes:</label><textarea name="notes" id="edit_notes" class="widefat" rows="3"></textarea></p>
+                <p><button type="submit" class="button button-primary">Update Lead</button></p>
+            </form>
+        </div>
+    </div>
 
     <!-- Add Lead Modal -->
     <div id="cc-add-lead-modal" class="cc-modal" style="display:none;">

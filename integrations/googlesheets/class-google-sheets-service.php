@@ -173,4 +173,43 @@ class Google_Sheets_Service {
 
         return $summary;
     }
+
+    /**
+     * Send lead status / conversation update back to Google Sheets via Webhook
+     */
+    public static function update_sheet_lead($lead_id, $status, $summary = '') {
+        $settings = get_option('cc_outreach_settings', array());
+        $webhook_url = !empty($settings['google_sheets_webhook_url']) ? $settings['google_sheets_webhook_url'] : '';
+
+        if (empty($webhook_url)) {
+            return false;
+        }
+
+        $lead = Lead::get($lead_id);
+        if (!$lead) return false;
+
+        $payload = array(
+            'lead_id'              => $lead['lead_id'],
+            'email'                => $lead['email'],
+            'first_name'           => $lead['first_name'],
+            'last_name'            => $lead['last_name'],
+            'company_name'         => $lead['company_name'],
+            'status'               => $status,
+            'conversation_summary' => $summary ? $summary : $lead['conversation_summary'],
+            'updated_at'           => current_time('mysql'),
+        );
+
+        $response = wp_remote_post($webhook_url, array(
+            'headers' => array('Content-Type' => 'application/json'),
+            'body'    => json_encode($payload),
+            'timeout' => 15,
+        ));
+
+        if (!is_wp_error($response)) {
+            Activity_Log::log('google_sheets_writeback', $lead_id, 'Pushed status update to Google Sheet webhook');
+            return true;
+        }
+
+        return false;
+    }
 }

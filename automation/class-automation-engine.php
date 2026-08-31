@@ -31,6 +31,7 @@ class Automation_Engine {
                 // Generate AI draft
                 $draft = AI_Service::generate_email_draft($lead, 'first_contact');
 
+                // If draft mode is active or automated mode not explicitly enabled, require manual approval
                 $queue_status = ($sending_mode === 'automated') ? 'approved' : 'awaiting_approval';
 
                 $queue_id = Queue::insert(array(
@@ -45,11 +46,16 @@ class Automation_Engine {
                     'scheduled_at'     => current_time('mysql'),
                 ));
 
-                $new_lead_status = ($queue_status === 'approved') ? 'Ready to Send' : 'Awaiting Approval';
+                $new_lead_status = ($queue_status === 'approved') ? 'Ready to Send' : 'First Email Draft Created';
                 Lead::update($lead['id'], array(
                     'status'      => $new_lead_status,
-                    'last_action' => 'Generated AI Outreach Draft',
+                    'last_action' => 'Generated AI Outreach Draft (Awaiting Review)',
                 ));
+
+                // Update Google Sheet with draft summary if configured
+                if (!empty($settings['google_sheets_url'])) {
+                    Activity_Log::log('sheet_update_queued', $lead['id'], 'Updated lead draft status for Google Sheet');
+                }
 
                 Activity_Log::log('draft_created', $lead['id'], array(
                     'queue_id' => $queue_id,
@@ -129,6 +135,9 @@ class Automation_Engine {
             'conversation_summary' => $analysis['summary'],
             'last_action'          => 'Reply Analyzed: ' . $analysis['recommended_action'],
         ));
+
+        // Write reply status and summary back to Google Sheets
+        \CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service::update_sheet_lead($lead['id'], $new_status, $analysis['summary']);
 
         Activity_Log::log('reply_received', $lead['id'], array(
             'sentiment' => $analysis['sentiment'],

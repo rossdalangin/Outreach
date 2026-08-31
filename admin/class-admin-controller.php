@@ -12,6 +12,7 @@ use CloseClient\Outreach\Includes\Models\Campaign;
 use CloseClient\Outreach\Includes\Models\Rule;
 use CloseClient\Outreach\Includes\Models\Activity_Log;
 use CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service;
+use CloseClient\Outreach\Integrations\Prospecting\Lead_Finder_Service;
 use CloseClient\Outreach\Integrations\AI\AI_Service;
 use CloseClient\Outreach\Integrations\Email\Email_Service;
 use CloseClient\Outreach\Automation\Automation_Engine;
@@ -32,6 +33,7 @@ class Admin_Controller {
         $submenus = array(
             'closeclient-outreach'           => array(__('Dashboard', 'closeclient-outreach'), array(__CLASS__, 'render_dashboard_page')),
             'closeclient-outreach-leads'     => array(__('Leads', 'closeclient-outreach'), array(__CLASS__, 'render_leads_page')),
+            'closeclient-outreach-prospecting' => array(__('Find Leads', 'closeclient-outreach'), array(__CLASS__, 'render_prospecting_page')),
             'closeclient-outreach-queue'     => array(__('Outreach Queue', 'closeclient-outreach'), array(__CLASS__, 'render_queue_page')),
             'closeclient-outreach-conversations' => array(__('Conversations', 'closeclient-outreach'), array(__CLASS__, 'render_conversations_page')),
             'closeclient-outreach-campaigns' => array(__('Campaigns', 'closeclient-outreach'), array(__CLASS__, 'render_campaigns_page')),
@@ -62,6 +64,11 @@ class Admin_Controller {
     public static function render_leads_page() {
         Security_Helper::verify_capability();
         require_once CC_OUTREACH_PLUGIN_DIR . 'templates/leads.php';
+    }
+
+    public static function render_prospecting_page() {
+        Security_Helper::verify_capability();
+        require_once CC_OUTREACH_PLUGIN_DIR . 'templates/prospecting.php';
     }
 
     public static function render_queue_page() {
@@ -134,7 +141,7 @@ class Admin_Controller {
             wp_send_json_error(__('Unauthorized capability.', 'closeclient-outreach'));
         }
 
-        $sub_action = isset($_POST['sub_action']) ? sanitize_text_field($_POST['sub_action']) : '';
+        $sub_action = isset($_REQUEST['sub_action']) ? sanitize_text_field($_REQUEST['sub_action']) : '';
 
         switch ($sub_action) {
             case 'sync_sheets':
@@ -204,6 +211,32 @@ class Admin_Controller {
                 wp_send_json_success(__('Status updated.', 'closeclient-outreach'));
                 break;
 
+            case 'update_lead_details':
+                $lead_id = isset($_POST['lead_id']) ? intval($_POST['lead_id']) : 0;
+                $data = array(
+                    'first_name'   => sanitize_text_field($_POST['first_name']),
+                    'last_name'    => sanitize_text_field($_POST['last_name']),
+                    'company_name' => sanitize_text_field($_POST['company_name']),
+                    'email'        => sanitize_email($_POST['email']),
+                    'website'      => sanitize_text_field($_POST['website']),
+                    'niche'        => sanitize_text_field($_POST['niche']),
+                    'status'       => sanitize_text_field($_POST['status']),
+                    'notes'        => sanitize_textarea_field($_POST['notes']),
+                );
+                Lead::update($lead_id, $data);
+                Activity_Log::log('lead_updated', $lead_id, 'Updated lead parameters via dashboard');
+                wp_send_json_success(__('Lead updated successfully.', 'closeclient-outreach'));
+                break;
+
+            case 'delete_lead':
+                $lead_id = isset($_POST['lead_id']) ? intval($_POST['lead_id']) : 0;
+                global $wpdb;
+                $table = Lead::get_table_name();
+                $wpdb->delete($table, array('id' => $lead_id));
+                Activity_Log::log('lead_deleted', $lead_id, 'Lead removed from database');
+                wp_send_json_success(__('Lead deleted.', 'closeclient-outreach'));
+                break;
+
             case 'create_campaign':
                 $name   = sanitize_text_field($_POST['name']);
                 $niche  = sanitize_text_field($_POST['target_niche']);
@@ -216,6 +249,14 @@ class Admin_Controller {
                 ));
                 Activity_Log::log('campaign_created', 0, 'Campaign: ' . $name);
                 wp_send_json_success(array('id' => $id, 'message' => __('Campaign created!', 'closeclient-outreach')));
+                break;
+
+            case 'discover_leads':
+                $industry = sanitize_text_field($_POST['industry']);
+                $location = sanitize_text_field($_POST['location']);
+                $quantity = intval($_POST['quantity']);
+                $res = Lead_Finder_Service::discover_leads($industry, $location, $quantity);
+                wp_send_json_success($res);
                 break;
 
             case 'create_rule':
