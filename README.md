@@ -1,45 +1,70 @@
-# CloseClient Outreach WordPress Plugin
+# CloseClient Outreach WordPress Plugin & System Process Guide
 
-**CloseClient Outreach** is a lightweight, AI-powered outreach CRM and automated client acquisition plugin built specifically for web development companies targeting coaches, consultants, and service providers.
-
-It operates directly inside the WordPress admin dashboard to manage leads, generate highly personalized AI email drafts, execute follow-ups, summarize prospect replies, enforce sending compliance limits, and synchronize two-way data with Google Sheets.
+**CloseClient Outreach** is a lightweight, AI-powered outreach CRM and automated client acquisition system built specifically for web development agencies targeting coaches, consultants, and professional service providers.
 
 ---
 
-## Key Features
+## Master 5-Stage Outreach Process Flowchart
 
-- **WordPress Admin CRM Dashboard**: Manage leads, outreach queues, campaigns, automation rules, activity logs, analytics, and settings.
-- **AI-Powered Personalization**: Integrated OpenAI (`gpt-4o`) and Anthropic Claude (`claude-3-5-sonnet`) providers with AES-256-CBC encrypted API key storage.
-- **AI Lead Prospecting**: Built-in internet lead finder to discover coaches and consultants by industry/niche and location.
-- **Draft Review Mode**: Human-in-the-loop review queue to inspect, edit, and approve drafts before sending.
-- **Two-Way Google Sheets Sync**: Import leads from Google Sheets and automatically push lead status and AI conversation summaries back using Google Apps Script Webhooks.
-- **Outreach Compliance & Safety**: Daily/hourly sending rate limits, schedule sending window restrictions, suppression lists (`Unsubscribed`, `Do Not Contact`, `Client Won`), and an Emergency Safety Kill-Switch.
-- **Inbound Webhook API**: Custom REST API endpoints (`/wp-json/closeclient-outreach/v1/webhook` and `/wp-json/closeclient-outreach/v1/sync`) secured via secret tokens.
+```
+[ STEP 1: Configuration & API Setup ]
+               │
+               ▼
+[ STEP 2: Lead Prospecting & Google Sheets ]
+               │
+               ▼
+[ STEP 3: AI Personalization & Human Review ]
+               │
+               ▼
+[ STEP 4: Sending Execution & Safety Compliance ]
+               │
+               ▼
+[ STEP 5: Reply Analysis & Client Conversion ]
+```
 
 ---
 
-## Installation & Setup
+## Step-by-Step Implementation Guide
 
-1. **Upload Plugin**: Copy the `closeclient-outreach` folder into your WordPress site's `wp-content/plugins/` directory.
-2. **Activate Plugin**: Navigate to **Plugins > Installed Plugins** in WordPress and click **Activate** under **CloseClient Outreach**.
-3. **Configure Settings**:
-   - Go to **CloseClient Outreach > Settings**.
-   - Select your preferred AI Provider (OpenAI or Anthropic Claude) and enter your API key.
-   - Configure your Google Sheets URL and optional Google Apps Script Webhook URL.
-   - Set daily/hourly sending limits and sending time windows.
-4. **Discover Leads**: Go to **CloseClient Outreach > Find Leads** to start prospecting coaches and consultants in your target niche.
+### Step 1: Initial Setup & API Configuration
+1. Activate **CloseClient Outreach** in WordPress Admin (**Plugins > Installed Plugins**).
+2. Go to **CloseClient Outreach > Settings**.
+3. Select your AI Provider (**OpenAI API** or **Anthropic Claude API**) and enter your API key (`sk-...` or `sk-ant-...`). API keys are encrypted at rest using AES-256-CBC.
+4. Select `Draft Mode (Manual Review)` as your Outreach Mode to review all generated drafts before sending.
+5. Set your **Sender Name** (e.g. `Alex from CloseClient`) and **Sender Email**.
+6. Set an **Inbound Webhook Secret** token (e.g. `cc_sec_token_12345`) for external reply webhook security.
+
+### Step 2: Lead Sourcing & Google Sheets Integration
+1. **Find Leads**: Go to **CloseClient Outreach > Find Leads**. Select your target industry (e.g. `Executive Coach`) and location (e.g. `Austin, TX`), then click **Search Internet & Import Leads**.
+2. **Google Sheets Import**: Upload `CloseClient_Outreach_Leads_Template.xlsx` or `.csv` to Google Drive and open in Google Sheets.
+3. **Google Apps Script Write-Back**: In Google Sheets, open *Extensions > Apps Script*, paste the webhook handler provided in **CloseClient Outreach > Docs & Growth**, deploy as Web App, and paste the Web App URL into Settings.
+
+### Step 3: AI Personalization & Human Review Queue
+1. **Generate Draft**: On the **Leads** screen, click **Draft** next to any new lead. The AI analyzes the lead's business, website, and niche to craft a personalized outreach draft.
+2. **Review Queue**: Go to **Outreach Queue** to inspect the draft body, subject line, recipient, and AI rationale.
+3. **Approve / Send**: Click **Approve** to authorize the draft or **Send Now** to dispatch immediately.
+
+### Step 4: Sending Controls & Outreach Safety
+1. **Sending Rate Limits**: Set daily limits (e.g. `50 emails/day`) and hourly limits (e.g. `10 emails/hour`) in Settings.
+2. **Sending Window Restrictions**: Configure sending start and end times (e.g. `09:00` to `17:00`) and disable weekend sending.
+3. **Automatic Suppression**: Contacts marked `Unsubscribed`, `Do Not Contact`, `Not Interested`, or `Client Won` are automatically blocked from automated sends.
+4. **Kill-Switch**: Enable the **EMERGENCY PAUSE ALL AUTOMATION** kill-switch in Settings to instantly freeze all background tasks if needed.
+
+### Step 5: Prospect Reply Analysis & Client Conversion
+1. **Inbound Reply Processing**: Webhook endpoint `/wp-json/closeclient-outreach/v1/webhook` receives prospect responses.
+2. **AI Sentiment Analysis**: The AI extracts interest level, key questions, and updates status (`Interested`, `Meeting Requested`, `Not Interested`).
+3. **Google Sheets Write-Back**: Lead status and conversation summary are automatically pushed back to your connected Google Sheet.
+4. **Close Web Dev Retainers**: Deliver a 3-minute Loom video website audit, schedule a discovery call, and present a $3,500–$7,500 WordPress Redesign offer.
 
 ---
 
 ## System Requirements
-
 - WordPress 5.8+
 - PHP 7.4+ or PHP 8.0+
 - OpenSSL extension enabled for credential encryption
-- Active OpenAI or Anthropic API Key for AI features
+- Active OpenAI or Anthropic API Key
 
 ---
 
 ## License
-
 GPL-2.0+ License. Built by CloseClient Engineering.
