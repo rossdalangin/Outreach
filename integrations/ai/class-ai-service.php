@@ -17,6 +17,10 @@ class AI_Service {
             return new Anthropic_Provider($settings);
         }
 
+        if ($provider_type === 'gemini') {
+            return new Gemini_Provider($settings);
+        }
+
         return new OpenAI_Provider($settings);
     }
 

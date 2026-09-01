@@ -74,7 +74,21 @@ $masked_key = !empty($api_key) ? substr($api_key, 0, 7) . '...' . substr($api_ke
                         <select id="ai_provider" name="settings[ai_provider]">
                             <option value="openai" <?php selected(!empty($settings['ai_provider']) && $settings['ai_provider'] === 'openai'); ?>>OpenAI API</option>
                             <option value="anthropic" <?php selected(!empty($settings['ai_provider']) && $settings['ai_provider'] === 'anthropic'); ?>>Anthropic Claude API</option>
+                            <option value="gemini" <?php selected(!empty($settings['ai_provider']) && $settings['ai_provider'] === 'gemini'); ?>>Google Gemini API (gemini-3-flash BETA)</option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gemini_api_key">Google Gemini API Key</label></th>
+                    <td>
+                        <input type="password" id="gemini_api_key" name="settings[gemini_api_key]" value="<?php echo esc_attr(!empty($settings['gemini_api_key']) ? \CloseClient\Outreach\Security\Security_Helper::decrypt($settings['gemini_api_key']) : ''); ?>" class="regular-text" placeholder="AIzaSy..." />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gemini_model">Gemini Model</label></th>
+                    <td>
+                        <input type="text" id="gemini_model" name="settings[gemini_model]" value="<?php echo esc_attr(!empty($settings['gemini_model']) ? $settings['gemini_model'] : 'gemini-3-flash'); ?>" class="regular-text" placeholder="gemini-3-flash" />
+                        <p class="description">Default model: <code>gemini-3-flash</code> (BETA)</p>
                     </td>
                 </tr>
                 <tr>

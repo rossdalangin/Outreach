@@ -136,6 +136,12 @@ class Admin_Controller {
                 $input['anthropic_api_key'] = isset($settings['anthropic_api_key']) ? $settings['anthropic_api_key'] : '';
             }
 
+            if (!empty($_POST['settings']['gemini_api_key'])) {
+                $input['gemini_api_key'] = Security_Helper::encrypt(sanitize_text_field($_POST['settings']['gemini_api_key']));
+            } else {
+                $input['gemini_api_key'] = isset($settings['gemini_api_key']) ? $settings['gemini_api_key'] : '';
+            }
+
             $input['kill_switch'] = !empty($_POST['settings']['kill_switch']) ? true : false;
 
             update_option('cc_outreach_settings', array_merge($settings, $input));
