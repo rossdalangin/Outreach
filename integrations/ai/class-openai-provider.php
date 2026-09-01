@@ -16,7 +16,7 @@ class OpenAI_Provider {
     private $max_tokens;
 
     public function __construct($config = array()) {
-        $encrypted_key = isset($config['api_key']) ? $config['api_key'] : '';
+        $encrypted_key = isset($config['ai_api_key']) ? $config['ai_api_key'] : (isset($config['api_key']) ? $config['api_key'] : '');
         $this->api_key = Security_Helper::decrypt($encrypted_key);
         $this->base_url = !empty($config['base_url']) ? rtrim($config['base_url'], '/') : 'https://api.openai.com/v1';
         $this->model = !empty($config['ai_model']) ? $config['ai_model'] : 'gpt-4o';

@@ -31,6 +31,8 @@ class Lead_Finder_Service {
 
         if ($provider_type === 'anthropic') {
             $provider = new \CloseClient\Outreach\Integrations\AI\Anthropic_Provider($settings);
+        } elseif ($provider_type === 'gemini') {
+            $provider = new \CloseClient\Outreach\Integrations\AI\Gemini_Provider($settings);
         } else {
             $provider = new \CloseClient\Outreach\Integrations\AI\OpenAI_Provider($settings);
         }

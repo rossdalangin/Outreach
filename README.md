@@ -1,10 +1,38 @@
-# CloseClient Outreach WordPress Plugin & System Process Guide
+# CloseClient Outreach WordPress Plugin & Architecture Manual
 
 **CloseClient Outreach** is a lightweight, AI-powered outreach CRM and automated client acquisition system built specifically for web development agencies targeting coaches, consultants, and professional service providers.
 
 ---
 
-## Master 5-Stage Outreach Process Flowchart
+## 1. System Architecture & Component Mapping
+
+```
+/closeclient-outreach/
+├── closeclient-outreach.php                  # Main Plugin Entry Point & Hooks
+├── includes/
+│   ├── class-plugin.php                       # Singleton Orchestrator
+│   ├── class-activator.php                    # Table Creation & Default Options
+│   ├── class-deactivator.php                  # Cron Unscheduling & Cleanup
+│   ├── class-rest-api.php                     # Webhook & Sync REST Routes
+│   └── models/                                # Data Models (Lead, Queue, Campaign, Rule, Log)
+├── admin/
+│   └── class-admin-controller.php             # Admin Menu & AJAX Action Handlers
+├── database/
+│   └── class-db-schema.php                    # dbDelta Custom Tables Setup
+├── integrations/
+│   ├── ai/                                    # AI Services (OpenAI, Anthropic, Gemini, Scoring)
+│   ├── email/                                 # Email Sending, Windows & Merge Tags
+│   ├── googlesheets/                          # CSV Parsing & Webhook Write-Back
+│   └── prospecting/                           # AI Lead Finder Engine
+├── security/
+│   └── class-security-helper.php              # Nonces, Capabilities & AES-256 Key Encryption
+├── templates/                                 # Dashboard Views & Playbooks
+└── assets/                                    # Admin CSS & JS Scripts
+```
+
+---
+
+## 2. Master 5-Stage Outreach Process Flowchart
 
 ```
 [ STEP 1: Configuration & API Setup ]
@@ -24,47 +52,56 @@
 
 ---
 
-## Step-by-Step Implementation Guide
+## 3. Configuration & REST API Reference
 
-### Step 1: Initial Setup & API Configuration
-1. Activate **CloseClient Outreach** in WordPress Admin (**Plugins > Installed Plugins**).
-2. Go to **CloseClient Outreach > Settings**.
-3. Select your AI Provider (**OpenAI API** or **Anthropic Claude API**) and enter your API key (`sk-...` or `sk-ant-...`). API keys are encrypted at rest using AES-256-CBC.
-4. Select `Draft Mode (Manual Review)` as your Outreach Mode to review all generated drafts before sending.
-5. Set your **Sender Name** (e.g. `Alex from CloseClient`) and **Sender Email**.
-6. Set an **Inbound Webhook Secret** token (e.g. `cc_sec_token_12345`) for external reply webhook security.
+### Environment Options (`wp_options`)
+| Option Key | Type | Description |
+|---|---|---|
+| `ai_provider` | String | `openai`, `anthropic`, or `gemini` |
+| `ai_api_key` | String (Encrypted) | OpenAI API Key (`sk-...`) |
+| `anthropic_api_key` | String (Encrypted) | Anthropic API Key (`sk-ant-...`) |
+| `gemini_api_key` | String (Encrypted) | Google Gemini API Key (`AIzaSy...`) |
+| `sending_mode` | String | `draft`, `approval`, or `automated` |
+| `daily_limit` | Integer | Max outbound emails per day (Default: `50`) |
+| `hourly_limit` | Integer | Max outbound emails per hour (Default: `10`) |
+| `webhook_secret` | String | Secret token for REST API Webhook verification |
 
-### Step 2: Lead Sourcing & Google Sheets Integration
-1. **Find Leads**: Go to **CloseClient Outreach > Find Leads**. Select your target industry (e.g. `Executive Coach`) and location (e.g. `Austin, TX`), then click **Search Internet & Import Leads**.
-2. **Google Sheets Import**: Upload `CloseClient_Outreach_Leads_Template.xlsx` or `.csv` to Google Drive and open in Google Sheets.
-3. **Google Apps Script Write-Back**: In Google Sheets, open *Extensions > Apps Script*, paste the webhook handler provided in **CloseClient Outreach > Docs & Growth**, deploy as Web App, and paste the Web App URL into Settings.
-
-### Step 3: AI Personalization & Human Review Queue
-1. **Generate Draft**: On the **Leads** screen, click **Draft** next to any new lead. The AI analyzes the lead's business, website, and niche to craft a personalized outreach draft.
-2. **Review Queue**: Go to **Outreach Queue** to inspect the draft body, subject line, recipient, and AI rationale.
-3. **Approve / Send**: Click **Approve** to authorize the draft or **Send Now** to dispatch immediately.
-
-### Step 4: Sending Controls & Outreach Safety
-1. **Sending Rate Limits**: Set daily limits (e.g. `50 emails/day`) and hourly limits (e.g. `10 emails/hour`) in Settings.
-2. **Sending Window Restrictions**: Configure sending start and end times (e.g. `09:00` to `17:00`) and disable weekend sending.
-3. **Automatic Suppression**: Contacts marked `Unsubscribed`, `Do Not Contact`, `Not Interested`, or `Client Won` are automatically blocked from automated sends.
-4. **Kill-Switch**: Enable the **EMERGENCY PAUSE ALL AUTOMATION** kill-switch in Settings to instantly freeze all background tasks if needed.
-
-### Step 5: Prospect Reply Analysis & Client Conversion
-1. **Inbound Reply Processing**: Webhook endpoint `/wp-json/closeclient-outreach/v1/webhook` receives prospect responses.
-2. **AI Sentiment Analysis**: The AI extracts interest level, key questions, and updates status (`Interested`, `Meeting Requested`, `Not Interested`).
-3. **Google Sheets Write-Back**: Lead status and conversation summary are automatically pushed back to your connected Google Sheet.
-4. **Close Web Dev Retainers**: Deliver a 3-minute Loom video website audit, schedule a discovery call, and present a $3,500–$7,500 WordPress Redesign offer.
+### REST API Webhook Endpoints
+- **POST `/wp-json/closeclient-outreach/v1/webhook`**: Inbound email reply processor. Accepts `email`, `reply_content`, and `X-CC-Token` header.
+- **POST `/wp-json/closeclient-outreach/v1/sync`**: Trigger Google Sheets synchronization remotely.
 
 ---
 
-## System Requirements
-- WordPress 5.8+
-- PHP 7.4+ or PHP 8.0+
-- OpenSSL extension enabled for credential encryption
-- Active OpenAI or Anthropic API Key
+## 4. Google Sheets Two-Way Apps Script Webhook
+
+Paste this Web App script into Google Sheets (*Extensions > Apps Script*) to enable automated write-back when leads reply or change status:
+
+```javascript
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Leads") || SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var email = data.email;
+    var status = data.status;
+    var summary = data.conversation_summary || "";
+    var values = sheet.getDataRange().getValues();
+
+    for (var i = 1; i < values.length; i++) {
+      if (values[i][4] == email) { // Column E (Email)
+        sheet.getRange(i + 1, 11).setValue(status);  // Column K (Status)
+        if (summary) sheet.getRange(i + 1, 16).setValue(summary); // Column P (Summary)
+        return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({result: "not_found"})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", error: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
 
 ---
 
-## License
-GPL-2.0+ License. Built by CloseClient Engineering.
+## 5. License & Credits
+
+GPL-2.0+ License. Developed by CloseClient Engineering.
