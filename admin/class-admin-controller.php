@@ -41,6 +41,8 @@ class Admin_Controller {
             'closeclient-outreach-templates' => array(__('Templates', 'closeclient-outreach'), array(__CLASS__, 'render_templates_page')),
             'closeclient-outreach-logs'      => array(__('Activity Log', 'closeclient-outreach'), array(__CLASS__, 'render_logs_page')),
             'closeclient-outreach-analytics' => array(__('Analytics', 'closeclient-outreach'), array(__CLASS__, 'render_analytics_page')),
+            'closeclient-outreach-docs'      => array(__('Docs & Growth', 'closeclient-outreach'), array(__CLASS__, 'render_docs_page')),
+            'closeclient-outreach-marketing' => array(__('Sales Playbook', 'closeclient-outreach'), array(__CLASS__, 'render_marketing_page')),
             'closeclient-outreach-settings'  => array(__('Settings', 'closeclient-outreach'), array(__CLASS__, 'render_settings_page')),
         );
 
@@ -104,6 +106,16 @@ class Admin_Controller {
     public static function render_analytics_page() {
         Security_Helper::verify_capability();
         require_once CC_OUTREACH_PLUGIN_DIR . 'templates/analytics.php';
+    }
+
+    public static function render_docs_page() {
+        Security_Helper::verify_capability();
+        require_once CC_OUTREACH_PLUGIN_DIR . 'templates/docs.php';
+    }
+
+    public static function render_marketing_page() {
+        Security_Helper::verify_capability();
+        require_once CC_OUTREACH_PLUGIN_DIR . 'templates/marketing.php';
     }
 
     public static function render_settings_page() {

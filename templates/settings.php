@@ -122,6 +122,13 @@ $masked_key = !empty($api_key) ? substr($api_key, 0, 7) . '...' . substr($api_ke
                     </td>
                 </tr>
                 <tr>
+                    <th scope="row"><label for="followup_days">Follow-Up Interval (Days)</label></th>
+                    <td>
+                        <input type="number" id="followup_days" name="settings[followup_days]" value="<?php echo esc_attr(!empty($settings['followup_days']) ? $settings['followup_days'] : 3); ?>" class="small-text" /> days
+                        <p class="description">Number of days to wait after sending an initial email before marking Follow-Up 1 as due (e.g. 3 days).</p>
+                    </td>
+                </tr>
+                <tr>
                     <th scope="row"><label for="daily_limit">Daily Sending Limit</label></th>
                     <td>
                         <input type="number" id="daily_limit" name="settings[daily_limit]" value="<?php echo esc_attr(!empty($settings['daily_limit']) ? $settings['daily_limit'] : 50); ?>" class="small-text" /> emails/day
