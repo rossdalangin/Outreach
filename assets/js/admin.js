@@ -57,6 +57,44 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // Edit & Preview Queue Modal
+    $(document).on('click', '.cc-btn-edit-queue', function(e) {
+        e.preventDefault();
+        var item = $(this).data('item');
+        $('#edit_queue_id').val(item.id);
+        $('#edit_queue_recipient').val(item.recipient_email);
+        $('#edit_queue_subject').val(item.subject);
+        $('#edit_queue_body').val(item.body_content);
+        $('#edit_queue_rationale').text(item.ai_rationale);
+        $('#cc-edit-queue-modal').show();
+    });
+
+    $('.cc-modal-close-btn').on('click', function() {
+        $('.cc-modal').hide();
+    });
+
+    $('#cc-form-edit-queue').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serializeArray();
+        var postData = {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'update_queue_item',
+            nonce: ccOutreachVars.nonce
+        };
+        $.each(formData, function(i, field) {
+            postData[field.name] = field.value;
+        });
+
+        $.post(ccOutreachVars.ajax_url, postData, function(response) {
+            if (response.success) {
+                alert(response.data);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
     // Approve Queue Item
     $(document).on('click', '.cc-btn-approve-queue', function(e) {
         e.preventDefault();

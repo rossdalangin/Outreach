@@ -203,6 +203,18 @@ class Admin_Controller {
                 wp_send_json_success(__('Queue item approved.', 'closeclient-outreach'));
                 break;
 
+            case 'update_queue_item':
+                $queue_id = isset($_POST['queue_id']) ? intval($_POST['queue_id']) : 0;
+                $subject  = sanitize_text_field($_POST['subject']);
+                $body     = sanitize_textarea_field($_POST['body_content']);
+                Queue::update($queue_id, array(
+                    'subject'      => $subject,
+                    'body_content' => $body,
+                ));
+                Activity_Log::log('draft_edited', $queue_id, 'Administrator edited queue draft content');
+                wp_send_json_success(__('Outreach draft updated successfully!', 'closeclient-outreach'));
+                break;
+
             case 'send_queue_item':
                 $queue_id = isset($_POST['queue_id']) ? intval($_POST['queue_id']) : 0;
                 $res = Email_Service::send_email($queue_id);
