@@ -1,14 +1,15 @@
 jQuery(document).ready(function($) {
 
-    // Settings Tab Switching
-    $('.cc-settings-tabs .nav-tab').on('click', function(e) {
+    // Settings & Mindmap Tab Switching
+    $('.cc-settings-tabs .nav-tab, .cc-mindmap-tabs .nav-tab').on('click', function(e) {
         e.preventDefault();
         var targetTab = $(this).attr('href');
+        var $wrapper = $(this).closest('.nav-tab-wrapper');
 
-        $('.cc-settings-tabs .nav-tab').removeClass('nav-tab-active');
+        $wrapper.find('.nav-tab').removeClass('nav-tab-active');
         $(this).addClass('nav-tab-active');
 
-        $('.cc-tab-content').hide();
+        $wrapper.siblings('.cc-tab-content').hide();
         $(targetTab).show();
     });
 

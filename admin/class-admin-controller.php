@@ -43,6 +43,7 @@ class Admin_Controller {
             'closeclient-outreach-analytics' => array(__('Analytics', 'closeclient-outreach'), array(__CLASS__, 'render_analytics_page')),
             'closeclient-outreach-docs'      => array(__('Docs & Growth', 'closeclient-outreach'), array(__CLASS__, 'render_docs_page')),
             'closeclient-outreach-marketing' => array(__('Sales Playbook', 'closeclient-outreach'), array(__CLASS__, 'render_marketing_page')),
+            'closeclient-outreach-mindmaps'  => array(__('Growth Mind Maps', 'closeclient-outreach'), array(__CLASS__, 'render_mindmaps_page')),
             'closeclient-outreach-settings'  => array(__('Settings', 'closeclient-outreach'), array(__CLASS__, 'render_settings_page')),
         );
 
@@ -116,6 +117,11 @@ class Admin_Controller {
     public static function render_marketing_page() {
         Security_Helper::verify_capability();
         require_once CC_OUTREACH_PLUGIN_DIR . 'templates/marketing.php';
+    }
+
+    public static function render_mindmaps_page() {
+        Security_Helper::verify_capability();
+        require_once CC_OUTREACH_PLUGIN_DIR . 'templates/mindmaps.php';
     }
 
     public static function render_settings_page() {
