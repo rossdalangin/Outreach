@@ -212,7 +212,20 @@ jQuery(document).ready(function($) {
             $btn.prop('disabled', false).html('<span class="dashicons dashicons-search"></span> Search Internet & Import Leads');
             if (response.success) {
                 $('#cc-prospecting-results').show();
-                $('#cc-prospecting-output').html('<p style="color:green; font-weight:bold;">Successfully discovered ' + response.data.total_found + ' prospects. Imported ' + response.data.new_added + ' new leads into database!</p>');
+                var html = '<p style="color:green; font-weight:bold; font-size:15px;"><span class="dashicons dashicons-yes-alt"></span> Discovered ' + response.data.total_found + ' prospects in ' + response.data.industry + '. Added ' + response.data.new_added + ' new leads to database and updated Google Sheets webhook!</p>';
+                if (response.data.prospects && response.data.prospects.length > 0) {
+                    html += '<table class="wp-list-table widefat fixed striped" style="margin-top:15px;">';
+                    html += '<thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Website</th><th>Location</th></tr></thead><tbody>';
+                    $.each(response.data.prospects, function(i, item) {
+                        html += '<tr><td><strong>' + (item.first_name || '') + ' ' + (item.last_name || '') + '</strong></td>';
+                        html += '<td>' + (item.company_name || '') + '</td>';
+                        html += '<td><code>' + (item.email || '') + '</code></td>';
+                        html += '<td><a href="' + (item.website || '#') + '" target="_blank">' + (item.website || '') + '</a></td>';
+                        html += '<td>' + (item.location || '') + '</td></tr>';
+                    });
+                    html += '</tbody></table>';
+                }
+                $('#cc-prospecting-output').html(html);
             } else {
                 alert('Search Error: ' + response.data);
             }

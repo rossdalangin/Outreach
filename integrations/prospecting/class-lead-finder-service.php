@@ -43,7 +43,9 @@ class Lead_Finder_Service {
         $discovered = array();
 
         if (!is_wp_error($response)) {
-            $decoded = json_decode($response, true);
+            // Clean markdown codeblocks from AI response if present (e.g. ```json ... ```)
+            $clean_response = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($response));
+            $decoded = json_decode($clean_response, true);
             if (is_array($decoded)) {
                 $discovered = $decoded;
             }
@@ -90,6 +92,9 @@ class Lead_Finder_Service {
                 if ($lead_id) {
                     $leads_created++;
                     Activity_Log::log('lead_discovered', $lead_id, 'Discovered via Internet Prospecting in ' . $industry);
+
+                    // Real-time write-back to Google Sheet via Webhook if configured
+                    \CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service::update_sheet_lead($lead_id, 'New Lead', 'Discovered via Web Prospecting');
                 }
             }
         }
@@ -98,6 +103,7 @@ class Lead_Finder_Service {
             'total_found' => count($discovered),
             'new_added'   => $leads_created,
             'industry'    => $industry,
+            'prospects'   => $discovered,
         );
     }
 }
