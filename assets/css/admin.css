@@ -55,6 +55,19 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+.cc-settings-tabs {
+    margin-bottom: 20px;
+}
+
+.cc-tab-content {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .cc-action-bar {
     margin-bottom: 20px;
 }

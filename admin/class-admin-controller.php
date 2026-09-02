@@ -143,6 +143,7 @@ class Admin_Controller {
             }
 
             $input['kill_switch'] = !empty($_POST['settings']['kill_switch']) ? true : false;
+            $input['allow_weekend_sending'] = !empty($_POST['settings']['allow_weekend_sending']) ? true : false;
 
             update_option('cc_outreach_settings', array_merge($settings, $input));
             echo '<div class="notice notice-success is-dismissible"><p>' . __('Settings updated successfully!', 'closeclient-outreach') . '</p></div>';
