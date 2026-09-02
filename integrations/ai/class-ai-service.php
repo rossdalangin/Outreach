@@ -98,11 +98,14 @@ class AI_Service {
     public static function generate_email_draft($lead, $type = 'first_contact') {
         $provider = self::get_provider();
 
-        $system_prompt = "You are an expert personalized outreach specialist at CloseClient (a premium web development & digital growth agency). "
-            . "Write a warm, concise, natural, non-pushy email draft targeting coaches or consultants. "
-            . "Rules:\n"
+        $seed = wp_generate_password(8, false);
+        $system_prompt = "You are an expert personalized outreach specialist at CloseClient. "
+            . "Write a warm, concise, natural, non-pushy email draft targeting coaches or consultants.\n"
+            . "ANTI-SPAM REPHRASING MANDATE (Unique Variation Seed: $seed):\n"
+            . "- Every email MUST use completely unique sentence structures, vocabulary, and phrasing to ensure 100% deliverability and avoid spam filters.\n"
+            . "- Vary opening greetings, value propositions, and closing call-to-actions.\n"
             . "- Never invent false claims or pretend you saw specific features if not provided.\n"
-            . "- Keep email short (100-150 words).\n"
+            . "- Keep email short (100-140 words).\n"
             . "- Focus on offering value and starting a conversation.\n"
             . "- Respond in JSON format with keys: 'subject', 'body', 'rationale'.";
 

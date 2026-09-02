@@ -76,11 +76,12 @@ function doPost(e) {
 
     <!-- Step 3 Card -->
     <div class="cc-card" style="border-left: 4px solid #6f42c1;">
-        <h2><span class="dashicons dashicons-email-alt"></span> Step 3: AI Draft Generation & Queue Review</h2>
+        <h2><span class="dashicons dashicons-email-alt"></span> Step 3: AI Unique Rephrasing & Anti-Spam Queue Review</h2>
         <ul style="line-height:1.8; font-size:14px;">
             <li><strong>Action 3.1 - Generate Draft:</strong> Click <strong>Draft</strong> next to any lead on the <a href="<?php echo admin_url('admin.php?page=closeclient-outreach-leads'); ?>">Leads</a> screen.</li>
-            <li><strong>Action 3.2 - Inspect Rationale:</strong> Review subject lines, email body, and AI rationale in the <a href="<?php echo admin_url('admin.php?page=closeclient-outreach-queue'); ?>">Outreach Queue</a>.</li>
-            <li><strong>Action 3.3 - Human Approval:</strong> Click <strong>Approve</strong> or <strong>Send Now</strong> to dispatch the email.</li>
+            <li><strong>Action 3.2 - Dynamic Unique Rephrasing:</strong> The AI automatically incorporates a unique variation seed for every single draft, ensuring sentence structures, vocabulary, and openings differ across all prospects to prevent spam filter grouping.</li>
+            <li><strong>Action 3.3 - Inspect Rationale:</strong> Review subject lines, email body, and AI rationale in the <a href="<?php echo admin_url('admin.php?page=closeclient-outreach-queue'); ?>">Outreach Queue</a>.</li>
+            <li><strong>Action 3.4 - Human Approval:</strong> Click <strong>Approve</strong> or <strong>Send Now</strong> to dispatch the email.</li>
         </ul>
     </div>
 
