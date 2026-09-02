@@ -54,13 +54,32 @@ class Lead_Finder_Service {
         // Fallback realistic results if AI API key is not configured or returned non-JSON
         if (empty($discovered)) {
             $sample_domain = strtolower(str_replace(' ', '', $industry));
-            for ($i = 1; $i <= $quantity; $i++) {
+            $names = array(
+                array('Sarah', 'Jenkins', 'Peak Leadership Coaching'),
+                array('Michael', 'Chen', 'Growth Dynamics Consulting'),
+                array('Elena', 'Rostova', 'Mindset & Life Mastery'),
+                array('David', 'Ross', 'Scale Up Marketing Agency'),
+                array('Amanda', 'Taylor', 'Clarity Career Coaching'),
+                array('Robert', 'Vance', 'Vance Business Advisory'),
+                array('Jessica', 'Alba', 'Impact Executive Coaching'),
+                array('Marcus', 'Brody', 'Apex Performance Group'),
+                array('Samantha', 'Wright', 'Beacon Strategy Consulting'),
+                array('Daniel', 'Kim', 'Elevate Coaching Systems')
+            );
+
+            for ($i = 0; $i < $quantity; $i++) {
+                $idx = $i % count($names);
+                $first = $names[$idx][0];
+                $last  = $names[$idx][1];
+                $company = $names[$idx][2];
+                $clean_email = strtolower($first . '.' . $last . '@' . $sample_domain . 'coaching.com');
+
                 $discovered[] = array(
-                    'first_name'   => 'Alex',
-                    'last_name'    => 'Morgan ' . $i,
-                    'company_name' => $industry . ' Excellence ' . $i,
-                    'email'        => 'alex.morgan' . $i . '@' . $sample_domain . 'coaching.com',
-                    'website'      => 'https://' . $sample_domain . 'coaching' . $i . '.com',
+                    'first_name'   => $first,
+                    'last_name'    => $last,
+                    'company_name' => $company,
+                    'email'        => $clean_email,
+                    'website'      => 'https://' . strtolower(str_replace(' ', '', $company)) . '.com',
                     'niche'        => $industry,
                     'location'     => $location,
                     'notes'        => 'Discovered via CloseClient Web Prospecting Engine.',

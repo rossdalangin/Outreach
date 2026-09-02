@@ -1,18 +1,18 @@
 jQuery(document).ready(function($) {
 
     // Settings, Docs & Mindmap Tab Switching
-    $(document).on('click', '.nav-tab-wrapper .nav-tab', function(e) {
+    $(document).on('click', '.nav-tab-wrapper a.nav-tab', function(e) {
         var targetTab = $(this).attr('href');
         if (!targetTab || targetTab.indexOf('#') !== 0) return;
 
         e.preventDefault();
-        var $container = $(this).closest('.cc-outreach-wrap');
+        var $wrap = $(this).closest('.cc-outreach-wrap');
 
-        $container.find('.nav-tab-wrapper .nav-tab').removeClass('nav-tab-active');
+        $wrap.find('.nav-tab-wrapper a.nav-tab').removeClass('nav-tab-active');
         $(this).addClass('nav-tab-active');
 
-        $container.find('.cc-tab-content').hide();
-        $container.find(targetTab).show();
+        $wrap.find('.cc-tab-content').hide().css('display', 'none');
+        $wrap.find(targetTab).css('display', 'block').show();
     });
 
     // Sync Google Sheets
