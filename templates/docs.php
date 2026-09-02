@@ -66,7 +66,9 @@ function doPost(e) {
         return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
       }
     }
-    return ContentService.createTextOutput(JSON.stringify({result: "not_found"})).setMimeType(ContentService.MimeType.JSON);
+    // Append row if lead is newly discovered and not found in sheet
+    sheet.appendRow([data.lead_id || "", data.first_name || "", data.last_name || "", data.company_name || "", email, "", "", "", "", "Web Prospecting", status, "", summary, "Alex"]);
+    return ContentService.createTextOutput(JSON.stringify({result: "appended"})).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({result: "error", error: err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }

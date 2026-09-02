@@ -63,6 +63,15 @@
     animation: fadeIn 0.2s ease-in-out;
 }
 
+.cc-tab-content[style*="display: block"],
+.cc-tab-content.active {
+    display: block !important;
+}
+
+.cc-tab-content[style*="display: none"] {
+    display: none !important;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

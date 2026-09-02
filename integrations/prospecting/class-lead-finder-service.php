@@ -51,7 +51,12 @@ class Lead_Finder_Service {
             }
         }
 
-        // Fallback realistic results if AI API key is not configured or returned non-JSON
+        // Fallback: Perform real internet web search query via DuckDuckGo HTML scraping
+        if (empty($discovered)) {
+            $discovered = self::search_web_duckduckgo($industry, $location, $quantity);
+        }
+
+        // Final fallback if web search is blocked by rate-limiting or firewall
         if (empty($discovered)) {
             $sample_domain = strtolower(str_replace(' ', '', $industry));
             $names = array(
@@ -59,12 +64,7 @@ class Lead_Finder_Service {
                 array('Michael', 'Chen', 'Growth Dynamics Consulting'),
                 array('Elena', 'Rostova', 'Mindset & Life Mastery'),
                 array('David', 'Ross', 'Scale Up Marketing Agency'),
-                array('Amanda', 'Taylor', 'Clarity Career Coaching'),
-                array('Robert', 'Vance', 'Vance Business Advisory'),
-                array('Jessica', 'Alba', 'Impact Executive Coaching'),
-                array('Marcus', 'Brody', 'Apex Performance Group'),
-                array('Samantha', 'Wright', 'Beacon Strategy Consulting'),
-                array('Daniel', 'Kim', 'Elevate Coaching Systems')
+                array('Amanda', 'Taylor', 'Clarity Career Coaching')
             );
 
             for ($i = 0; $i < $quantity; $i++) {
@@ -124,5 +124,72 @@ class Lead_Finder_Service {
             'industry'    => $industry,
             'prospects'   => $discovered,
         );
+    }
+
+    /**
+     * Real web scraping via DuckDuckGo html search
+     */
+    private static function search_web_duckduckgo($industry, $location, $quantity) {
+        $search_term = urlencode(sprintf('"%s" "%s" contact email', $industry, $location));
+        $url = 'https://html.duckduckgo.com/html/?q=' . $search_term;
+
+        $response = wp_remote_get($url, array(
+            'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'timeout'    => 15,
+        ));
+
+        if (is_wp_error($response)) {
+            return array();
+        }
+
+        $html = wp_remote_retrieve_body($response);
+        if (empty($html)) return array();
+
+        $results = array();
+        // Parse result snippets and URLs
+        if (preg_match_all('/<a class="result__url" href="([^"]+)".*?>(.*?)<\/a>.*?<a class="result__snippet".*?>(.*?)<\/a>/s', $html, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                if (count($results) >= $quantity) break;
+
+                $raw_url = trim(strip_tags($match[1]));
+                $title   = trim(strip_tags($match[2]));
+                $snippet = trim(strip_tags($match[3]));
+
+                // Extract domain name
+                $host = parse_url($raw_url, PHP_URL_HOST);
+                if (empty($host) || strpos($host, 'duckduckgo') !== false) {
+                    $host = trim(str_replace(array('http://', 'https://'), '', $raw_url));
+                }
+
+                if (!empty($host)) {
+                    // Extract email if found in snippet
+                    $email = strtolower($first_name = 'info') . '@' . $host;
+                    if (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $snippet, $email_matches)) {
+                        $email = strtolower($email_matches[0]);
+                    }
+
+                    $clean_title = explode('-', $title)[0];
+                    $clean_title = explode('|', $clean_title)[0];
+                    $clean_title = trim($clean_title);
+
+                    $name_parts = explode(' ', $clean_title);
+                    $first_name = isset($name_parts[0]) ? $name_parts[0] : 'Coach';
+                    $last_name  = isset($name_parts[1]) ? $name_parts[1] : '';
+
+                    $results[] = array(
+                        'first_name'   => $first_name,
+                        'last_name'    => $last_name,
+                        'company_name' => $clean_title ? $clean_title : $industry . ' Specialist',
+                        'email'        => $email,
+                        'website'      => 'https://' . $host,
+                        'niche'        => $industry,
+                        'location'     => $location,
+                        'notes'        => 'Live Internet Web Search Discovery: ' . substr($snippet, 0, 100),
+                    );
+                }
+            }
+        }
+
+        return $results;
     }
 }

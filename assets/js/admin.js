@@ -11,8 +11,8 @@ jQuery(document).ready(function($) {
         $wrap.find('.nav-tab-wrapper a.nav-tab').removeClass('nav-tab-active');
         $(this).addClass('nav-tab-active');
 
-        $wrap.find('.cc-tab-content').hide().css('display', 'none');
-        $wrap.find(targetTab).css('display', 'block').show();
+        $wrap.find('.cc-tab-content').removeClass('active').hide().attr('style', 'display: none !important;');
+        $wrap.find(targetTab).addClass('active').show().attr('style', 'display: block !important;');
     });
 
     // Sync Google Sheets
