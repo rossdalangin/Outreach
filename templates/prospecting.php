@@ -51,7 +51,8 @@ if (!defined('ABSPATH')) exit;
                 <tr>
                     <th scope="row"><label for="prospect_quantity">Number of Prospects</label></th>
                     <td>
-                        <input type="number" id="prospect_quantity" name="quantity" value="5" min="1" max="10" class="small-text" />
+                        <input type="number" id="prospect_quantity" name="quantity" value="10" min="1" max="50" class="small-text" />
+                        <p class="description">Search up to 50 prospects at once per execution.</p>
                     </td>
                 </tr>
             </table>

@@ -15,7 +15,7 @@ class Lead_Finder_Service {
      * Search the internet / AI discovery for target prospects in a given industry/niche
      */
     public static function discover_leads($industry = 'Business Coach', $location = 'United States', $quantity = 5, $channel = 'all') {
-        $quantity = min(max(intval($quantity), 1), 10);
+        $quantity = min(max(intval($quantity), 1), 50);
 
         // Perform web/search discovery via AI provider or search query structure
         $settings = get_option('cc_outreach_settings', array());
