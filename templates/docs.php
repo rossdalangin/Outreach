@@ -41,10 +41,16 @@ if (!defined('ABSPATH')) exit;
 
     <!-- Step 2 Card -->
     <div class="cc-card" style="border-left: 4px solid #fd7e14;">
-        <h2><span class="dashicons dashicons-search"></span> Step 2: Lead Prospecting & Two-Way Google Sheets Setup</h2>
-        <p>Populate your database using AI internet discovery or Google Sheets synchronization:</p>
+        <h2><span class="dashicons dashicons-search"></span> Step 2: Multi-Source Lead Acquisition & Google Sheets Integration</h2>
+        <p>Populate your database using CloseClient's multi-source prospecting engine or Google Sheets synchronization:</p>
         <ul style="line-height:1.8; font-size:14px;">
-            <li><strong>Action 2.1 - AI Lead Finder:</strong> Open <a href="<?php echo admin_url('admin.php?page=closeclient-outreach-prospecting'); ?>">Find Leads</a>. Select target niche (e.g. <code>Executive Coach</code>) and location (e.g. <code>Austin, TX</code>). Click <strong>Search Internet & Import Leads</strong>.</li>
+            <li><strong>Action 2.1 - Multi-Source Web & LinkedIn Prospecting:</strong> Open <a href="<?php echo admin_url('admin.php?page=closeclient-outreach-prospecting'); ?>">Find Leads</a>. The system queries multiple high-quality web indexes:
+                <ul>
+                    <li><code>LinkedIn Directory Scraper:</code> Queries <code>site:linkedin.com/in/</code> for verified coach/consultant profile titles and locations.</li>
+                    <li><code>Direct Company Site HTML Scraper:</code> Scrapes target company homepages to extract <code>mailto:</code> links and direct domain contact emails.</li>
+                    <li><code>Niche Search Directories:</code> Scrapes public coaching directories matching the requested location.</li>
+                </ul>
+            </li>
             <li><strong>Action 2.2 - Upload Excel Template:</strong> Upload <code>CloseClient_Outreach_Leads_Template.xlsx</code> or <code>.csv</code> to Google Drive and open in Google Sheets.</li>
             <li><strong>Action 2.3 - Apps Script Webhook Code:</strong> Paste this Webhook script into Google Sheets (<em>Extensions > Apps Script</em>), deploy as Web App (Access: <code>Anyone</code>), and copy the URL into Settings:</li>
         </ul>

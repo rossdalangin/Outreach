@@ -66,6 +66,14 @@
 | `hourly_limit` | Integer | Max outbound emails per hour (Default: `10`) |
 | `webhook_secret` | String | Secret token for REST API Webhook verification |
 
+### Lead Acquisition Channels & Scraping Mechanics
+1. **Multi-Source Web & LinkedIn Prospecting:**
+   - **LinkedIn Business Profile Scraper:** Queries `site:linkedin.com/in/` to extract verified coach/consultant titles, names, and profile URLs.
+   - **Direct Company Site HTML Scraper:** Scrapes target company homepages to extract `mailto:` links and contact emails directly.
+   - **Coaching Search Indexes:** Scrapes niche web directories matching requested location parameters.
+2. **Google Sheets Integration:** Synchronizes leads from public spreadsheet URLs with full two-way status write-back.
+3. **AI Prospecting Engine:** Generates realistic prospect datasets using OpenAI, Anthropic Claude, or Google Gemini.
+
 ### REST API Webhook Endpoints
 - **POST `/wp-json/closeclient-outreach/v1/webhook`**: Inbound email reply processor. Accepts `email`, `reply_content`, and `X-CC-Token` header.
 - **POST `/wp-json/closeclient-outreach/v1/sync`**: Trigger Google Sheets synchronization remotely.
