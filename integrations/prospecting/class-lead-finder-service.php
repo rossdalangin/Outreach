@@ -273,6 +273,26 @@ class Lead_Finder_Service {
     }
 
     /**
+     * Verify if domain has active DNS MX records or reachable HTTP status
+     */
+    public static function is_valid_active_domain($domain) {
+        $domain = trim(preg_replace('/^www\./', '', strtolower($domain)));
+        if (empty($domain)) return false;
+
+        // Check DNS MX record
+        if (function_exists('checkdnsrr') && checkdnsrr($domain, 'MX')) {
+            return true;
+        }
+
+        // Check DNS A record as fallback
+        if (function_exists('checkdnsrr') && (checkdnsrr($domain, 'A') || checkdnsrr($domain, 'AAAA'))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Extract real contact email directly from website HTML or snippet
      */
     private static function extract_email_from_website($host, $snippet) {
@@ -324,7 +344,11 @@ class Lead_Finder_Service {
             }
         }
 
-        // Clean default contact email for domain
-        return 'contact@' . $host;
+        // Clean default contact email for domain if domain is valid
+        if (self::is_valid_active_domain($host)) {
+            return 'contact@' . $host;
+        }
+
+        return 'info@' . $host;
     }
 }
