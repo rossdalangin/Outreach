@@ -14,7 +14,7 @@ class Lead_Finder_Service {
     /**
      * Search the internet / AI discovery for target prospects in a given industry/niche
      */
-    public static function discover_leads($industry = 'Business Coach', $location = 'United States', $quantity = 5) {
+    public static function discover_leads($industry = 'Business Coach', $location = 'United States', $quantity = 5, $channel = 'all') {
         $quantity = min(max(intval($quantity), 1), 10);
 
         // Perform web/search discovery via AI provider or search query structure
@@ -51,9 +51,9 @@ class Lead_Finder_Service {
             }
         }
 
-        // Perform multi-site search queries targeting LinkedIn profile directories and direct company websites
+        // Perform multi-site search queries targeting 10 specific channels
         if (empty($discovered)) {
-            $discovered = self::search_multi_source_web($industry, $location, $quantity);
+            $discovered = self::search_multi_source_web($industry, $location, $quantity, $channel);
         }
 
         // Final fallback if web search is blocked by rate-limiting or firewall
@@ -82,6 +82,7 @@ class Lead_Finder_Service {
                     'website'      => 'https://' . strtolower(str_replace(' ', '', $company)) . '.com',
                     'niche'        => $industry,
                     'location'     => $location,
+                    'lead_source'  => 'Web Prospecting Engine',
                     'notes'        => 'Discovered via CloseClient Web Prospecting Engine.',
                 );
             }
@@ -216,19 +217,66 @@ class Lead_Finder_Service {
     }
 
     /**
-     * Multi-source web search targeting LinkedIn business profiles & direct company sites
+     * Multi-source web search targeting 10 specific channels
      */
-    private static function search_multi_source_web($industry, $location, $quantity) {
-        $queries = array(
-            sprintf('site:linkedin.com/in/ "%s" "%s" contact email', $industry, $location),
-            sprintf('"%s" "%s" coaching website contact email', $industry, $location),
-            sprintf('"%s" directory "%s" contact email', $industry, $location)
+    private static function search_multi_source_web($industry, $location, $quantity, $channel = 'all') {
+        $channel_queries = array(
+            'google_maps' => array(
+                'query'  => sprintf('site:google.com/maps/ "%s" "%s" contact email', $industry, $location),
+                'source' => 'Google Maps Profile'
+            ),
+            'linkedin' => array(
+                'query'  => sprintf('site:linkedin.com/in/ "%s" "%s" contact email', $industry, $location),
+                'source' => 'LinkedIn Directory'
+            ),
+            'industry_dirs' => array(
+                'query'  => sprintf('"%s" directory "%s" contact email association', $industry, $location),
+                'source' => 'Industry Directory'
+            ),
+            'company_web' => array(
+                'query'  => sprintf('"%s" "%s" coaching website contact email', $industry, $location),
+                'source' => 'Company Website Scraper'
+            ),
+            'facebook' => array(
+                'query'  => sprintf('site:facebook.com "%s" "%s" coaching group contact email', $industry, $location),
+                'source' => 'Facebook Business Page'
+            ),
+            'job_boards' => array(
+                'query'  => sprintf('site:indeed.com "%s" "%s" consultant email', $industry, $location),
+                'source' => 'Job Board Listing'
+            ),
+            'clutch_agency' => array(
+                'query'  => sprintf('site:clutch.co "%s" "%s" email', $industry, $location),
+                'source' => 'Clutch Directory'
+            ),
+            'event_speakers' => array(
+                'query'  => sprintf('site:eventbrite.com "%s" "%s" keynote speaker contact', $industry, $location),
+                'source' => 'Speaker Directory'
+            ),
+            'podcasts' => array(
+                'query'  => sprintf('site:podcasts.apple.com "%s" "%s" host email', $industry, $location),
+                'source' => 'Podcast Directory'
+            ),
+            'gov_registries' => array(
+                'query'  => sprintf('"%s" "%s" business registry filing contact email', $industry, $location),
+                'source' => 'Business Registry'
+            ),
         );
+
+        $selected_queries = array();
+        if ($channel !== 'all' && isset($channel_queries[$channel])) {
+            $selected_queries[] = $channel_queries[$channel];
+        } else {
+            $selected_queries = array_values($channel_queries);
+        }
 
         $results = array();
 
-        foreach ($queries as $query) {
+        foreach ($selected_queries as $item_query) {
             if (count($results) >= $quantity) break;
+
+            $query          = $item_query['query'];
+            $default_source = $item_query['source'];
 
             $url = 'https://html.duckduckgo.com/html/?q=' . urlencode($query);
             $response = wp_remote_get($url, array(
@@ -275,7 +323,8 @@ class Lead_Finder_Service {
                             'linkedin_url' => $raw_url,
                             'niche'        => $industry,
                             'location'     => $location,
-                            'notes'        => 'LinkedIn Business Directory Discovery: ' . substr($snippet, 0, 100),
+                            'lead_source'  => $default_source,
+                            'notes'        => sprintf('%s Discovery: %s', $default_source, substr($snippet, 0, 100)),
                         );
                     } elseif (!empty($host) && strpos($host, 'duckduckgo') === false) {
                         $email = self::extract_email_from_website($host, $snippet);
@@ -290,7 +339,8 @@ class Lead_Finder_Service {
                             'website'      => 'https://' . $host,
                             'niche'        => $industry,
                             'location'     => $location,
-                            'notes'        => 'Direct Company Site Scraped Discovery: ' . substr($snippet, 0, 100),
+                            'lead_source'  => $default_source,
+                            'notes'        => sprintf('%s Discovery: %s', $default_source, substr($snippet, 0, 100)),
                         );
                     }
                 }

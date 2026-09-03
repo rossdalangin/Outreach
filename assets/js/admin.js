@@ -238,6 +238,7 @@ jQuery(document).ready(function($) {
             action: 'cc_outreach_ajax_action',
             sub_action: 'discover_leads',
             industry: $('#prospect_industry').val(),
+            channel: $('#prospect_channel').val(),
             location: $('#prospect_location').val(),
             quantity: $('#prospect_quantity').val(),
             nonce: ccOutreachVars.nonce

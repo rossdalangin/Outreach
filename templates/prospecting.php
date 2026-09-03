@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) exit;
 ?>
 <div class="wrap cc-outreach-wrap">
     <h1><span class="dashicons dashicons-search"></span> Find Leads (AI Internet Prospecting)</h1>
-    <p>Search the internet for coaches, consultants, and service providers in your target industry and automatically import them into your CloseClient database.</p>
+    <p>Search the internet for coaches, consultants, and service providers in your target industry across multiple online channels and automatically import them into your CloseClient database.</p>
 
     <div class="cc-card">
         <h2>Prospecting Search Parameters</h2>
@@ -21,6 +21,25 @@ if (!defined('ABSPATH')) exit;
                             <option value="Small Agency">Small Agency Owner</option>
                             <option value="Financial Consultant">Financial Consultant</option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="prospect_channel">Acquisition Sourcing Channel</label></th>
+                    <td>
+                        <select id="prospect_channel" name="channel" class="regular-text">
+                            <option value="all">All Channels (Multi-Source Search)</option>
+                            <option value="google_maps">Google Maps Local Profiles</option>
+                            <option value="linkedin">LinkedIn Executive Directory</option>
+                            <option value="industry_dirs">Industry & Association Directories</option>
+                            <option value="company_web">Company Website Contact Scraper</option>
+                            <option value="facebook">Facebook Business Groups & Pages</option>
+                            <option value="job_boards">Job Board & Hiring Directories (Indeed/Glassdoor)</option>
+                            <option value="clutch_agency">Clutch & B2B Agency Portals</option>
+                            <option value="event_speakers">Eventbrite & Keynote Speaker Directories</option>
+                            <option value="podcasts">Apple Podcasts Host Directory</option>
+                            <option value="gov_registries">Public Business Registries</option>
+                        </select>
+                        <p class="description">Select a specific acquisition channel or search across all 10 sources simultaneously.</p>
                     </td>
                 </tr>
                 <tr>

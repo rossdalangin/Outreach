@@ -391,7 +391,8 @@ class Admin_Controller {
                 $industry = sanitize_text_field($_POST['industry']);
                 $location = sanitize_text_field($_POST['location']);
                 $quantity = intval($_POST['quantity']);
-                $res = Lead_Finder_Service::discover_leads($industry, $location, $quantity);
+                $channel  = isset($_POST['channel']) ? sanitize_text_field($_POST['channel']) : 'all';
+                $res = Lead_Finder_Service::discover_leads($industry, $location, $quantity, $channel);
                 wp_send_json_success($res);
                 break;
 
