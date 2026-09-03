@@ -89,12 +89,25 @@ class Lead_Finder_Service {
 
         $added_prospects = array();
 
-        // Database deduplication and repeat search loop until $quantity new leads are added
+        // Database deduplication and active domain validation loop until $quantity new leads are added
         foreach ($discovered as $item) {
             if ($leads_created >= $quantity) break;
 
             $email = isset($item['email']) ? sanitize_email($item['email']) : '';
-            if (empty($email)) continue;
+            $website = isset($item['website']) ? esc_url_raw($item['website']) : '';
+            if (empty($email) || !is_email($email)) continue;
+
+            // Validate domain MX / active DNS status
+            $domain_host = parse_url($website, PHP_URL_HOST);
+            if (empty($domain_host)) {
+                $email_parts = explode('@', $email);
+                $domain_host = isset($email_parts[1]) ? $email_parts[1] : '';
+            }
+
+            if (!empty($domain_host) && !self::is_valid_active_domain($domain_host)) {
+                Activity_Log::log('lead_prospect_invalid_domain', 0, 'Skipped lead with inactive domain: ' . $domain_host);
+                continue;
+            }
 
             // Check database if lead already exists by email
             $existing = Lead::get_by_email($email);
@@ -112,7 +125,7 @@ class Lead_Finder_Service {
                 'last_name'    => sanitize_text_field(isset($item['last_name']) ? $item['last_name'] : ''),
                 'company_name' => sanitize_text_field(isset($item['company_name']) ? $item['company_name'] : ''),
                 'email'        => $email,
-                'website'      => esc_url_raw(isset($item['website']) ? $item['website'] : ''),
+                'website'      => !empty($website) ? $website : 'https://' . $domain_host,
                 'niche'        => sanitize_text_field(isset($item['niche']) ? $item['niche'] : $industry),
                 'location'     => sanitize_text_field(isset($item['location']) ? $item['location'] : $location),
                 'status'       => 'New Lead',
