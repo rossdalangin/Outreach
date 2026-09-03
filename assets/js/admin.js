@@ -59,6 +59,26 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // Preset Template Variations dictionary
+    var queuePresets = {
+        preset_soft_pitch: {
+            subject: "Quick observation regarding your mobile booking page",
+            body: "Hi,\n\nI came across your website while reviewing top coaching practices in your area. Your client testimonials are impressive!\n\nI noticed your mobile site takes over 3 seconds to load and doesn't feature a direct 1-click consultation booking calendar. For high-ticket coaching, this often leads to lost consultation requests.\n\nWe built a high-converting WordPress framework specifically for coaches that fixes this in under 7 days.\n\nWould you be open to a quick 3-minute video showing 2 specific tweaks to increase your weekly client bookings?\n\nBest regards,\nCloseClient Engineering Team"
+        },
+        preset_speed_benchmark: {
+            subject: "Re: Quick question regarding your mobile booking page",
+            body: "Hi,\n\nFollowing up on my last note. Here is a quick performance benchmark comparison between your current site and top-converting coaching platforms:\n\n- Average Coaching Industry Mobile Speed: 1.6s\n- Your Site's Current Mobile Speed: 4.1s\n\nStudies show a 1-second improvement in site load speed boosts consultation booking conversions by up to 21%.\n\nShould I record a 3-minute video showing how we optimize this?\n\nBest regards,\nCloseClient Engineering Team"
+        },
+        preset_case_study: {
+            subject: "Re: Quick question regarding your mobile booking page",
+            body: "Hi,\n\nWe recently redesigned a WordPress coaching platform for an executive coach in your space. By streamlining mobile performance and implementing a 1-click booking funnel, they doubled discovery call requests within 30 days.\n\nAre you free for a brief 10-minute chat this Thursday to see if we can get similar results for your practice?\n\nBest regards,\nCloseClient Engineering Team"
+        },
+        preset_breakup: {
+            subject: "Permission to close your file?",
+            body: "Hi,\n\nI haven't heard back, so I assume optimizing your website for client bookings isn't a priority right now.\n\nI won't follow up again, but if you ever want to upgrade your WordPress site into an automated client acquisition engine, feel free to reply anytime.\n\nBest of luck with your practice!\n\nBest regards,\nCloseClient Engineering Team"
+        }
+    };
+
     // Edit & Preview Queue Modal
     $(document).on('click', '.cc-btn-edit-queue', function(e) {
         e.preventDefault();
@@ -68,7 +88,17 @@ jQuery(document).ready(function($) {
         $('#edit_queue_subject').val(item.subject);
         $('#edit_queue_body').val(item.body_content);
         $('#edit_queue_rationale').text(item.ai_rationale);
+        $('#cc-select-queue-template').val('');
         $('#cc-edit-queue-modal').show();
+    });
+
+    // Handle template preset dropdown selection in Queue Modal
+    $('#cc-select-queue-template').on('change', function() {
+        var presetKey = $(this).val();
+        if (presetKey && queuePresets[presetKey]) {
+            $('#edit_queue_subject').val(queuePresets[presetKey].subject);
+            $('#edit_queue_body').val(queuePresets[presetKey].body);
+        }
     });
 
     $('.cc-modal-close-btn').on('click', function() {

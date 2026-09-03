@@ -71,6 +71,17 @@ $queue_items = Queue::query(array('number' => 50));
             <form id="cc-form-edit-queue">
                 <input type="hidden" name="queue_id" id="edit_queue_id">
                 <p><label>Recipient Email:</label><input type="email" id="edit_queue_recipient" readonly class="widefat" style="background:#f0f0f1;"></p>
+
+                <p><label>Load Preset Email Body Template / Variation:</label>
+                    <select id="cc-select-queue-template" class="widefat">
+                        <option value="">-- Keep Current AI Generated Draft --</option>
+                        <option value="preset_soft_pitch">Preset 1: Soft Permission Pitch</option>
+                        <option value="preset_speed_benchmark">Preset 2: Mobile Speed & Core Web Vitals Benchmark</option>
+                        <option value="preset_case_study">Preset 3: Case Study & Social Proof</option>
+                        <option value="preset_breakup">Preset 4: Polite Break-Up Email</option>
+                    </select>
+                </p>
+
                 <p><label>Subject Line:</label><input type="text" name="subject" id="edit_queue_subject" required class="widefat"></p>
                 <p><label>Email Body Content:</label><textarea name="body_content" id="edit_queue_body" class="widefat" rows="10" required></textarea></p>
                 <p><strong>AI Rationale:</strong> <small id="edit_queue_rationale" style="color:#555;"></small></p>
