@@ -275,6 +275,32 @@ class Admin_Controller {
                 wp_send_json_success(__('Lead deleted.', 'closeclient-outreach'));
                 break;
 
+            case 'delete_duplicate_leads':
+                global $wpdb;
+                $table = Lead::get_table_name();
+                // Query duplicate IDs matching email, full name, or company_name, keeping lowest/earliest ID
+                $deleted_count = 0;
+
+                // 1. Delete duplicate emails
+                $sql_email = "DELETE t1 FROM $table t1 INNER JOIN $table t2 WHERE t1.id > t2.id AND t1.email != '' AND LOWER(t1.email) = LOWER(t2.email);";
+                $deleted_count += $wpdb->query($sql_email);
+
+                // 2. Delete duplicate company names
+                $sql_company = "DELETE t1 FROM $table t1 INNER JOIN $table t2 WHERE t1.id > t2.id AND t1.company_name != '' AND LOWER(t1.company_name) = LOWER(t2.company_name);";
+                $deleted_count += $wpdb->query($sql_company);
+
+                // 3. Delete duplicate full names
+                $sql_names = "DELETE t1 FROM $table t1 INNER JOIN $table t2 WHERE t1.id > t2.id AND t1.first_name != '' AND LOWER(CONCAT(t1.first_name, ' ', t1.last_name)) = LOWER(CONCAT(t2.first_name, ' ', t2.last_name));";
+                $deleted_count += $wpdb->query($sql_names);
+
+                Activity_Log::log('duplicate_leads_deleted', 0, sprintf('Deleted %d duplicate lead records', $deleted_count));
+
+                wp_send_json_success(array(
+                    'count'   => $deleted_count,
+                    'message' => sprintf(__('Successfully removed %d duplicate lead records!', 'closeclient-outreach'), $deleted_count)
+                ));
+                break;
+
             case 'bulk_delete_leads':
                 $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
                 if (!empty($ids)) {

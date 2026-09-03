@@ -18,6 +18,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
     <h1 class="wp-heading-inline">Lead Management</h1>
     <button class="page-title-action" id="cc-btn-open-add-lead-modal">Add New Lead</button>
     <button class="page-title-action" id="cc-btn-export-leads-csv">Export CSV</button>
+    <button class="page-title-action button-link-delete" id="cc-btn-delete-duplicates" style="color:#d9534f;"><span class="dashicons dashicons-trash" style="font-size:14px; vertical-align:middle;"></span> Delete All Duplicates</button>
     <hr class="wp-header-end">
 
     <div class="tablenav top">

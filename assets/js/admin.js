@@ -375,6 +375,29 @@ jQuery(document).ready(function($) {
         $('.cc-log-checkbox').prop('checked', $(this).is(':checked'));
     });
 
+    // Delete All Duplicates Button Handler
+    $('#cc-btn-delete-duplicates').on('click', function(e) {
+        e.preventDefault();
+        if (!confirm('Are you sure you want to scan and delete all duplicate lead records (matching email, company name, or person name)?')) return;
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Deleting Duplicates...');
+
+        $.post(ccOutreachVars.ajax_url, {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'delete_duplicate_leads',
+            nonce: ccOutreachVars.nonce
+        }, function(response) {
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash" style="font-size:14px; vertical-align:middle;"></span> Delete All Duplicates');
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
     // Apply Bulk Lead Actions
     $('#cc-btn-apply-bulk-leads').on('click', function(e) {
         e.preventDefault();
