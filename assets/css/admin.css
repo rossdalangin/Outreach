@@ -118,12 +118,34 @@
 
 .cc-modal-content {
     background-color: #fefefe;
-    margin: 10% auto;
+    margin: 5% auto;
     padding: 25px;
     border-radius: 6px;
-    width: 450px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
     position: relative;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Custom Scrollbar for Modal Popups */
+.cc-modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cc-modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.cc-modal-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.cc-modal-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 .cc-modal-close {
