@@ -181,6 +181,7 @@ jQuery(document).ready(function($) {
         $('#edit_email').val(lead.email);
         $('#edit_website').val(lead.website);
         $('#edit_niche').val(lead.niche);
+        $('#edit_lead_source').val(lead.lead_source);
         $('#edit_status').val(lead.status);
         $('#edit_notes').val(lead.notes);
         $('#cc-edit-lead-modal').show();
@@ -247,12 +248,14 @@ jQuery(document).ready(function($) {
                 var html = '<p style="color:green; font-weight:bold; font-size:15px;"><span class="dashicons dashicons-yes-alt"></span> Discovered ' + response.data.total_found + ' prospects in ' + response.data.industry + '. Added ' + response.data.new_added + ' new leads to database and updated Google Sheets webhook!</p>';
                 if (response.data.prospects && response.data.prospects.length > 0) {
                     html += '<table class="wp-list-table widefat fixed striped" style="margin-top:15px;">';
-                    html += '<thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Website</th><th>Location</th></tr></thead><tbody>';
+                    html += '<thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Website</th><th>Lead Source</th><th>Location</th></tr></thead><tbody>';
                     $.each(response.data.prospects, function(i, item) {
+                        var sourceTag = item.lead_source || 'Internet Prospecting Search';
                         html += '<tr><td><strong>' + (item.first_name || '') + ' ' + (item.last_name || '') + '</strong></td>';
                         html += '<td>' + (item.company_name || '') + '</td>';
                         html += '<td><code>' + (item.email || '') + '</code></td>';
                         html += '<td><a href="' + (item.website || '#') + '" target="_blank">' + (item.website || '') + '</a></td>';
+                        html += '<td><span class="cc-badge">' + sourceTag + '</span></td>';
                         html += '<td>' + (item.location || '') + '</td></tr>';
                     });
                     html += '</tbody></table>';

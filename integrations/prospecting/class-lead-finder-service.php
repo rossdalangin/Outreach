@@ -94,6 +94,7 @@ class Lead_Finder_Service {
             // Avoid duplicate lead
             $existing = Lead::get_by_email($email);
             if (!$existing) {
+                $source_val = !empty($item['lead_source']) ? sanitize_text_field($item['lead_source']) : 'Internet Prospecting Search';
                 $lead_id = Lead::insert(array(
                     'lead_id'      => 'FIND_' . strtoupper(wp_generate_password(6, false)),
                     'first_name'   => sanitize_text_field(isset($item['first_name']) ? $item['first_name'] : ''),
@@ -105,7 +106,7 @@ class Lead_Finder_Service {
                     'location'     => sanitize_text_field(isset($item['location']) ? $item['location'] : $location),
                     'status'       => 'New Lead',
                     'notes'        => sanitize_text_field(isset($item['notes']) ? $item['notes'] : ''),
-                    'lead_source'  => 'Internet Prospecting Search',
+                    'lead_source'  => $source_val,
                 ));
 
                 if ($lead_id) {

@@ -257,6 +257,7 @@ class Admin_Controller {
                     'email'        => sanitize_email($_POST['email']),
                     'website'      => sanitize_text_field($_POST['website']),
                     'niche'        => sanitize_text_field($_POST['niche']),
+                    'lead_source'  => sanitize_text_field($_POST['lead_source']),
                     'status'       => sanitize_text_field($_POST['status']),
                     'notes'        => sanitize_textarea_field($_POST['notes']),
                 );

@@ -60,6 +60,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
                 <th>Company</th>
                 <th>Email / Website</th>
                 <th>Niche</th>
+                <th>Lead Source</th>
                 <th>Status</th>
                 <th>Last Contact</th>
                 <th>Actions</th>
@@ -78,6 +79,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
                             <small><a href="<?php echo esc_url($l['website']); ?>" target="_blank"><?php echo esc_html($l['website']); ?></a></small>
                         </td>
                         <td><span class="cc-badge"><?php echo esc_html($l['niche']); ?></span></td>
+                        <td><span class="cc-badge" style="background:#e8f4f8; color:#007cba;"><?php echo esc_html($l['lead_source'] ? $l['lead_source'] : 'Manual Entry'); ?></span></td>
                         <td><span class="cc-status-badge status-<?php echo esc_attr(sanitize_html_class(strtolower(str_replace(' ', '-', $l['status'])))); ?>"><?php echo esc_html($l['status']); ?></span></td>
                         <td><?php echo esc_html($l['last_contact_date'] ? $l['last_contact_date'] : 'Never'); ?></td>
                         <td>
@@ -106,6 +108,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
                 <p><label>Email Address:</label><input type="email" name="email" id="edit_email" required class="widefat"></p>
                 <p><label>Website URL:</label><input type="url" name="website" id="edit_website" class="widefat"></p>
                 <p><label>Niche:</label><input type="text" name="niche" id="edit_niche" class="widefat"></p>
+                <p><label>Lead Source:</label><input type="text" name="lead_source" id="edit_lead_source" class="widefat"></p>
                 <p><label>Status:</label>
                     <select name="status" id="edit_status" class="widefat">
                         <?php foreach ($all_statuses as $st => $lbl): ?>
