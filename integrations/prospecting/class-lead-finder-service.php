@@ -162,11 +162,8 @@ class Lead_Finder_Service {
                 }
 
                 if (!empty($host)) {
-                    // Extract email if found in snippet
-                    $email = strtolower($first_name = 'info') . '@' . $host;
-                    if (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $snippet, $email_matches)) {
-                        $email = strtolower($email_matches[0]);
-                    }
+                    // Perform direct website scrape to extract real email from website homepage or contact page
+                    $email = self::extract_email_from_website($host, $snippet);
 
                     $clean_title = explode('-', $title)[0];
                     $clean_title = explode('|', $clean_title)[0];
@@ -191,5 +188,61 @@ class Lead_Finder_Service {
         }
 
         return $results;
+    }
+
+    /**
+     * Extract real contact email directly from website HTML or snippet
+     */
+    private static function extract_email_from_website($host, $snippet) {
+        $host = preg_replace('/^www\./', '', $host);
+
+        // First check snippet for valid email
+        if (preg_match_all('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $snippet, $email_matches)) {
+            foreach ($email_matches[0] as $found_email) {
+                $found_email = strtolower($found_email);
+                if (!preg_match('/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i', $found_email) && strpos($found_email, 'example') === false) {
+                    return $found_email;
+                }
+            }
+        }
+
+        // Fetch homepage HTML to extract mailto: or plain text email
+        $site_url = 'https://' . $host;
+        $response = wp_remote_get($site_url, array('timeout' => 8, 'user-agent' => 'Mozilla/5.0'));
+
+        if (!is_wp_error($response)) {
+            $html = wp_remote_retrieve_body($response);
+            if (!empty($html)) {
+                // Check mailto: links first
+                if (preg_match('/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i', $html, $mailto_matches)) {
+                    $found_email = strtolower(trim($mailto_matches[1]));
+                    if (strpos($found_email, 'example') === false && strpos($found_email, 'sentry') === false) {
+                        return $found_email;
+                    }
+                }
+
+                // Check body text for emails matching the domain host
+                if (preg_match_all('/[a-zA-Z0-9._%+-]+@' . preg_quote($host, '/') . '/i', $html, $domain_matches)) {
+                    return strtolower(trim($domain_matches[0][0]));
+                }
+
+                // Fallback email extraction from body
+                if (preg_match_all('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $html, $body_matches)) {
+                    foreach ($body_matches[0] as $found_email) {
+                        $found_email = strtolower(trim($found_email));
+                        if (!preg_match('/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i', $found_email) &&
+                            strpos($found_email, 'example') === false &&
+                            strpos($found_email, 'w3.org') === false &&
+                            strpos($found_email, 'sentry') === false &&
+                            strpos($found_email, 'schema') === false) {
+                            return $found_email;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Clean default contact email for domain
+        return 'contact@' . $host;
     }
 }
