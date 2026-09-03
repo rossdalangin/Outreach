@@ -12,7 +12,7 @@ use CloseClient\Outreach\Integrations\AI\AI_Service;
 class Lead_Finder_Service {
 
     /**
-     * Search the internet / AI discovery for target prospects in a given industry/niche across 10 acquisition channels
+     * Search the internet / AI discovery for real target prospects in a given industry/niche across 10 acquisition channels
      */
     public static function discover_leads($industry = 'Business Coach', $location = 'United States', $quantity = 5, $channel = 'all') {
         $quantity = min(max(intval($quantity), 1), 50);
@@ -39,13 +39,14 @@ class Lead_Finder_Service {
         $provider_type = !empty($settings['ai_provider']) ? $settings['ai_provider'] : 'openai';
 
         $prompt = sprintf(
-            "Find %d real or highly realistic sample target prospects for CloseClient web design outreach in the '%s' industry located in '%s' specifically sourced from '%s'. "
+            "Find %d real, genuine, currently active target businesses and executive prospects for CloseClient web development outreach in the '%s' industry located in '%s' sourced from '%s'. "
+            . "Do not generate fake names or fake domains. Retrieve authentic business names, owner/executive full names, real active domain websites, real contact emails, and actual locations. "
             . "Output JSON array of objects with keys: 'first_name', 'last_name', 'company_name', 'email', 'website', 'niche', 'location', 'lead_source', 'notes'.",
             $quantity, esc_html($industry), esc_html($location), esc_html($channel_name)
         );
 
         $system_prompt = sprintf(
-            "You are an AI internet prospecting specialist for CloseClient. Generate verified, targeted lead records for coaches and consultants matching the requested niche (%s), location (%s), and acquisition channel (%s). Ensure emails and web domains match standard valid internet formats.",
+            "You are an elite live internet prospecting intelligence agent for CloseClient. Your job is to return exclusively REAL, verified, active businesses, real executive names, and actual domain websites matching the requested niche (%s), location (%s), and acquisition channel (%s). Never output fake or placeholder data.",
             $industry, $location, $channel_name
         );
 
@@ -76,41 +77,10 @@ class Lead_Finder_Service {
             }
         }
 
-        // Perform multi-site search queries targeting 10 specific channels
-        if (empty($discovered)) {
-            $discovered = self::search_multi_source_web($industry, $location, $quantity, $channel);
-        }
-
-        // Final fallback if web search is blocked by rate-limiting or firewall
-        if (empty($discovered)) {
-            $sample_domain = strtolower(str_replace(' ', '', $industry));
-            $names = array(
-                array('Sarah', 'Jenkins', 'Peak Leadership Coaching'),
-                array('Michael', 'Chen', 'Growth Dynamics Consulting'),
-                array('Elena', 'Rostova', 'Mindset & Life Mastery'),
-                array('David', 'Ross', 'Scale Up Marketing Agency'),
-                array('Amanda', 'Taylor', 'Clarity Career Coaching')
-            );
-
-            for ($i = 0; $i < $quantity; $i++) {
-                $idx = $i % count($names);
-                $first = $names[$idx][0];
-                $last  = $names[$idx][1];
-                $company = $names[$idx][2];
-                $clean_email = strtolower($first . '.' . $last . '@' . $sample_domain . 'coaching.com');
-
-                $discovered[] = array(
-                    'first_name'   => $first,
-                    'last_name'    => $last,
-                    'company_name' => $company,
-                    'email'        => $clean_email,
-                    'website'      => 'https://' . strtolower(str_replace(' ', '', $company)) . '.com',
-                    'niche'        => $industry,
-                    'location'     => $location,
-                    'lead_source'  => $channel_name,
-                    'notes'        => 'Discovered via CloseClient ' . $channel_name . ' Search Engine.',
-                );
-            }
+        // Always perform live web search to discover and enrich real web prospects
+        $web_discovered = self::search_multi_source_web($industry, $location, $quantity, $channel);
+        if (!empty($web_discovered)) {
+            $discovered = array_merge($discovered, $web_discovered);
         }
 
         $added_prospects = array();
@@ -123,7 +93,7 @@ class Lead_Finder_Service {
             $website = isset($item['website']) ? esc_url_raw($item['website']) : '';
             if (empty($email) || !is_email($email)) continue;
 
-            // Validate domain MX / active DNS status
+            // Validate domain MX / active DNS status to guarantee real domain existence
             $domain_host = parse_url($website, PHP_URL_HOST);
             if (empty($domain_host)) {
                 $email_parts = explode('@', $email);
@@ -179,57 +149,10 @@ class Lead_Finder_Service {
                 $item['id'] = $lead_id;
                 $added_prospects[] = $item;
 
-                Activity_Log::log('lead_discovered', $lead_id, 'Discovered via ' . $source_val . ' in ' . $industry);
+                Activity_Log::log('lead_discovered', $lead_id, 'Discovered real prospect via ' . $source_val . ' in ' . $industry);
 
                 // Real-time write-back to Google Sheet via Webhook if configured
-                \CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service::update_sheet_lead($lead_id, 'New Lead', 'Discovered via ' . $source_val);
-            }
-        }
-
-        // If duplicates reduced the count below target quantity, generate additional unique candidates
-        if ($leads_created < $quantity) {
-            $needed = $quantity - $leads_created;
-            $sample_domain = strtolower(str_replace(' ', '', $industry));
-
-            for ($k = 1; $k <= $needed; $k++) {
-                $unique_seed = strtolower(wp_generate_password(5, false));
-                $gen_email = 'contact.' . $unique_seed . '@' . $sample_domain . 'coaching.com';
-
-                if (!Lead::get_by_email($gen_email)) {
-                    $gen_item = array(
-                        'first_name'   => 'Coach',
-                        'last_name'    => ucfirst($unique_seed),
-                        'company_name' => $industry . ' Excellence ' . strtoupper($unique_seed),
-                        'email'        => $gen_email,
-                        'website'      => 'https://' . $sample_domain . 'coaching-' . $unique_seed . '.com',
-                        'niche'        => $industry,
-                        'location'     => $location,
-                        'lead_source'  => $channel_name,
-                        'notes'        => 'Discovered via CloseClient ' . $channel_name . ' Engine.',
-                    );
-
-                    $lead_id = Lead::insert(array(
-                        'lead_id'      => 'FIND_' . strtoupper(wp_generate_password(6, false)),
-                        'first_name'   => $gen_item['first_name'],
-                        'last_name'    => $gen_item['last_name'],
-                        'company_name' => $gen_item['company_name'],
-                        'email'        => $gen_email,
-                        'website'      => $gen_item['website'],
-                        'niche'        => $industry,
-                        'location'     => $location,
-                        'status'       => 'New Lead',
-                        'notes'        => $gen_item['notes'],
-                        'lead_source'  => $gen_item['lead_source'],
-                    ));
-
-                    if ($lead_id) {
-                        $leads_created++;
-                        $gen_item['id'] = $lead_id;
-                        $added_prospects[] = $gen_item;
-                        Activity_Log::log('lead_discovered', $lead_id, 'Discovered via ' . $channel_name . ' in ' . $industry);
-                        \CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service::update_sheet_lead($lead_id, 'New Lead', 'Discovered via ' . $channel_name);
-                    }
-                }
+                \CloseClient\Outreach\Integrations\GoogleSheets\Google_Sheets_Service::update_sheet_lead($lead_id, 'New Lead', 'Discovered real prospect via ' . $source_val);
             }
         }
 
@@ -242,12 +165,12 @@ class Lead_Finder_Service {
     }
 
     /**
-     * Multi-source web search targeting 10 specific channels
+     * Multi-source live web search targeting 10 specific acquisition channels
      */
     private static function search_multi_source_web($industry, $location, $quantity, $channel = 'all') {
         $channel_queries = array(
             'google_maps' => array(
-                'query'  => sprintf('site:google.com/maps/ "%s" "%s" contact email', $industry, $location),
+                'query'  => sprintf('"%s" "%s" contact email website', $industry, $location),
                 'source' => 'Google Maps Local Profile'
             ),
             'linkedin' => array(
@@ -255,15 +178,15 @@ class Lead_Finder_Service {
                 'source' => 'LinkedIn Executive Directory'
             ),
             'industry_dirs' => array(
-                'query'  => sprintf('"%s" directory "%s" contact email association', $industry, $location),
+                'query'  => sprintf('"%s" directory "%s" association contact email', $industry, $location),
                 'source' => 'Industry Association Directory'
             ),
             'company_web' => array(
-                'query'  => sprintf('"%s" "%s" coaching website contact email', $industry, $location),
+                'query'  => sprintf('"%s" "%s" coaching practice website email', $industry, $location),
                 'source' => 'Company Website Scraper'
             ),
             'facebook' => array(
-                'query'  => sprintf('site:facebook.com "%s" "%s" coaching group contact email', $industry, $location),
+                'query'  => sprintf('site:facebook.com "%s" "%s" page email website', $industry, $location),
                 'source' => 'Facebook Business Page'
             ),
             'job_boards' => array(
@@ -271,15 +194,15 @@ class Lead_Finder_Service {
                 'source' => 'Job Board Listing'
             ),
             'clutch_agency' => array(
-                'query'  => sprintf('site:clutch.co "%s" "%s" email', $industry, $location),
+                'query'  => sprintf('site:clutch.co "%s" "%s" email website', $industry, $location),
                 'source' => 'Clutch B2B Directory'
             ),
             'event_speakers' => array(
-                'query'  => sprintf('site:eventbrite.com "%s" "%s" keynote speaker contact', $industry, $location),
+                'query'  => sprintf('site:eventbrite.com "%s" "%s" speaker contact email', $industry, $location),
                 'source' => 'Speaker Directory'
             ),
             'podcasts' => array(
-                'query'  => sprintf('site:podcasts.apple.com "%s" "%s" host email', $industry, $location),
+                'query'  => sprintf('site:podcasts.apple.com "%s" "%s" podcast host contact email', $industry, $location),
                 'source' => 'Podcast Directory'
             ),
             'gov_registries' => array(
@@ -322,54 +245,57 @@ class Lead_Finder_Service {
                     $title   = trim(strip_tags($match[2]));
                     $snippet = trim(strip_tags($match[3]));
 
-                    // Channel specific detection and parsing rules
-                    $is_linkedin = (strpos($raw_url, 'linkedin.com') !== false || strpos($title, 'LinkedIn') !== false);
-                    $is_gmaps    = (strpos($raw_url, 'google.com/maps') !== false || strpos($title, 'Google Maps') !== false);
-                    $is_clutch   = (strpos($raw_url, 'clutch.co') !== false);
-                    $is_podcast  = (strpos($raw_url, 'podcasts.apple.com') !== false);
+                    // Extract actual host
                     $host = parse_url($raw_url, PHP_URL_HOST);
+                    if (empty($host) || strpos($host, 'duckduckgo.com') !== false) continue;
+
+                    $is_linkedin = (strpos($raw_url, 'linkedin.com') !== false || strpos($title, 'LinkedIn') !== false);
 
                     if ($is_linkedin) {
                         $clean_title = preg_replace('/ - .*?LinkedIn.*$/i', '', $title);
                         $clean_title = preg_replace('/ \| .*$/i', '', $clean_title);
                         $name_parts  = explode(' ', trim($clean_title));
-                        $first_name  = isset($name_parts[0]) ? $name_parts[0] : 'Coach';
-                        $last_name   = isset($name_parts[1]) ? $name_parts[1] : 'Specialist';
-                        $company     = $industry . ' Executive Practice';
+                        $first_name  = isset($name_parts[0]) ? $name_parts[0] : 'Executive';
+                        $last_name   = isset($name_parts[1]) ? $name_parts[1] : '';
 
-                        $email = strtolower($first_name . '.' . $last_name) . '@' . strtolower(str_replace(' ', '', $industry)) . 'coaching.com';
+                        $email = '';
                         if (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $snippet, $email_matches)) {
                             $email = strtolower($email_matches[0]);
                         }
 
-                        $results[] = array(
-                            'first_name'   => $first_name,
-                            'last_name'    => $last_name,
-                            'company_name' => $company,
-                            'email'        => $email,
-                            'website'      => 'https://' . strtolower(str_replace(' ', '', $company)) . '.com',
-                            'linkedin_url' => $raw_url,
-                            'niche'        => $industry,
-                            'location'     => $location,
-                            'lead_source'  => $default_source,
-                            'notes'        => sprintf('%s Discovery: %s', $default_source, substr($snippet, 0, 100)),
-                        );
-                    } elseif (!empty($host) && strpos($host, 'duckduckgo') === false) {
+                        if (!empty($email) && is_email($email)) {
+                            $results[] = array(
+                                'first_name'   => $first_name,
+                                'last_name'    => $last_name,
+                                'company_name' => $clean_title,
+                                'email'        => $email,
+                                'website'      => $raw_url,
+                                'linkedin_url' => $raw_url,
+                                'niche'        => $industry,
+                                'location'     => $location,
+                                'lead_source'  => $default_source,
+                                'notes'        => sprintf('%s Discovery: %s', $default_source, substr($snippet, 0, 120)),
+                            );
+                        }
+                    } else {
+                        // Extract real email from company site HTML
                         $email = self::extract_email_from_website($host, $snippet);
-                        $clean_title = trim(explode('-', explode('|', $title)[0])[0]);
-                        $name_parts = explode(' ', $clean_title);
+                        if (!empty($email) && is_email($email)) {
+                            $clean_company = trim(explode('-', explode('|', $title)[0])[0]);
+                            $name_parts = explode(' ', $clean_company);
 
-                        $results[] = array(
-                            'first_name'   => isset($name_parts[0]) ? $name_parts[0] : 'Coach',
-                            'last_name'    => isset($name_parts[1]) ? $name_parts[1] : '',
-                            'company_name' => $clean_title ? $clean_title : $industry . ' Practice',
-                            'email'        => $email,
-                            'website'      => 'https://' . $host,
-                            'niche'        => $industry,
-                            'location'     => $location,
-                            'lead_source'  => $default_source,
-                            'notes'        => sprintf('%s Discovery: %s', $default_source, substr($snippet, 0, 100)),
-                        );
+                            $results[] = array(
+                                'first_name'   => isset($name_parts[0]) ? $name_parts[0] : 'Owner',
+                                'last_name'    => isset($name_parts[1]) ? $name_parts[1] : '',
+                                'company_name' => $clean_company ? $clean_company : $host,
+                                'email'        => $email,
+                                'website'      => 'https://' . $host,
+                                'niche'        => $industry,
+                                'location'     => $location,
+                                'lead_source'  => $default_source,
+                                'notes'        => sprintf('%s Live Scraped: %s', $default_source, substr($snippet, 0, 120)),
+                            );
+                        }
                     }
                 }
             }
@@ -408,7 +334,10 @@ class Lead_Finder_Service {
         if (preg_match_all('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $snippet, $email_matches)) {
             foreach ($email_matches[0] as $found_email) {
                 $found_email = strtolower($found_email);
-                if (!preg_match('/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i', $found_email) && strpos($found_email, 'example') === false) {
+                if (!preg_match('/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i', $found_email) &&
+                    strpos($found_email, 'example') === false &&
+                    strpos($found_email, 'sentry') === false &&
+                    strpos($found_email, 'schema') === false) {
                     return $found_email;
                 }
             }
@@ -431,7 +360,7 @@ class Lead_Finder_Service {
                     // Check mailto: links first
                     if (preg_match('/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i', $html, $mailto_matches)) {
                         $found_email = strtolower(trim($mailto_matches[1]));
-                        if (strpos($found_email, 'example') === false && strpos($found_email, 'sentry') === false) {
+                        if (strpos($found_email, 'example') === false && strpos($found_email, 'sentry') === false && strpos($found_email, 'w3.org') === false) {
                             return $found_email;
                         }
                     }
@@ -458,11 +387,11 @@ class Lead_Finder_Service {
             }
         }
 
-        // Clean default contact email for domain if domain is valid
+        // Default to active domain contact email if active domain exists
         if (self::is_valid_active_domain($host)) {
             return 'contact@' . $host;
         }
 
-        return 'info@' . $host;
+        return '';
     }
 }
