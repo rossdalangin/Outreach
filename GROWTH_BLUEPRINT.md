@@ -30,13 +30,14 @@ High-ticket coaches and consultants sell packages ranging from **$3,000 to $15,0
 - Set initial daily sending limits to **30–50 emails/day** per domain in Settings.
 - Enforce business-hour sending windows (09:00 to 17:00, Monday to Friday).
 
-### Stage 2: Target Lead Sourcing
-- Use **Find Leads** to source 15–25 targeted executive or business coaches per week.
+### Stage 2: Target Lead Sourcing & Multi-Site Scraping
+- Use **Find Leads** to source 15–25 targeted executive or business coaches per week via LinkedIn profile scraping (`site:linkedin.com/in/`) and direct company website HTML scraping.
+- Use **Delete All Duplicates** in Lead Management to clean database duplicates.
 - Upload template lead spreadsheets (`CloseClient_Outreach_Leads_Template.xlsx`) to Google Drive and connect the Google Apps Script Webhook URL for two-way synchronization.
 
-### Stage 3: Permission-First AI Personalization
-- Click **Draft** on the Leads screen to generate short (100–125 words) non-pushy emails noticing a specific website improvement area (e.g. slow mobile speed or missing call-to-action).
-- Always maintain human review in **Outreach Queue** before sending.
+### Stage 3: Permission-First AI Personalization & Queue Inspection
+- Click **Draft** on the Leads screen to generate short (100–125 words) non-pushy emails noticing a specific website improvement area. Every draft uses dynamic variation seeds to prevent spam grouping.
+- Inspect drafts in the **Outreach Queue** modal with preset body template options before approving or sending.
 
 ### Stage 4: Delivering the 3-Minute Loom Website Audit
 - When a prospect replies with interest, record a 3-minute Loom video showing:
@@ -51,10 +52,10 @@ High-ticket coaches and consultants sell packages ranging from **$3,000 to $15,0
 
 ## 3. Agency Onboarding Checklist
 
-- [x] Configure AI Provider Keys & Encryption (OpenAI / Anthropic / Gemini)
-- [x] Deploy Google Sheets Webhook Write-Back Script
+- [x] Configure AI Provider Keys & Encryption (OpenAI / Anthropic / Gemini 3 Flash)
+- [x] Deploy Google Sheets Webhook Write-Back Script with `appendRow` support
 - [x] Set Up SPF, DKIM, DMARC DNS Deliverability Records
-- [x] Source First 25 Target Coaching Leads
-- [x] Review & Send First Batch of AI Personalized Outreach
+- [x] Source First 25 Target Coaching Leads via Multi-Site Scraper
+- [x] Review & Send First Batch of AI Personalized Outreach in Queue
 - [x] Deliver Loom Video Audits to Interested Replies
 - [x] Close Web Design Retainers & Update CRM Status

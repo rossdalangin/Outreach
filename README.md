@@ -20,13 +20,13 @@
 ├── database/
 │   └── class-db-schema.php                    # dbDelta Custom Tables Setup
 ├── integrations/
-│   ├── ai/                                    # AI Services (OpenAI, Anthropic, Gemini, Scoring)
+│   ├── ai/                                    # AI Services (OpenAI, Anthropic, Gemini 3 Flash, Scoring)
 │   ├── email/                                 # Email Sending, Windows & Merge Tags
 │   ├── googlesheets/                          # CSV Parsing & Webhook Write-Back
-│   └── prospecting/                           # AI Lead Finder Engine
+│   └── prospecting/                           # AI & Multi-Source Lead Finder Engine
 ├── security/
 │   └── class-security-helper.php              # Nonces, Capabilities & AES-256 Key Encryption
-├── templates/                                 # Dashboard Views & Playbooks
+├── templates/                                 # Dashboard Views, Docs & Playbooks
 └── assets/                                    # Admin CSS & JS Scripts
 ```
 
@@ -52,7 +52,18 @@
 
 ---
 
-## 3. Configuration & REST API Reference
+## 3. Lead Sourcing & Multi-Site Scraping Mechanics
+
+1. **Multi-Source Web & LinkedIn Prospecting:**
+   - **LinkedIn Business Profile Scraper:** Queries `site:linkedin.com/in/` to extract verified coach/consultant titles, names, and profile URLs.
+   - **Direct Company Site HTML Scraper:** Scrapes target company homepages to extract `mailto:` links and contact emails directly.
+   - **Coaching Search Indexes:** Scrapes niche web directories matching requested location parameters.
+2. **Google Sheets Two-Way Integration:** Synchronizes leads from public spreadsheet URLs and pushes status and AI conversation summary updates back using Google Apps Script Webhooks (`sheet.appendRow` and range updates).
+3. **Multi-Provider AI Engines:** Generates realistic prospect datasets using OpenAI (GPT-4o), Anthropic Claude (Claude 3.5 Sonnet), or Google Gemini (`gemini-3-flash` BETA).
+
+---
+
+## 4. Configuration & REST API Reference
 
 ### Environment Options (`wp_options`)
 | Option Key | Type | Description |
@@ -66,23 +77,15 @@
 | `hourly_limit` | Integer | Max outbound emails per hour (Default: `10`) |
 | `webhook_secret` | String | Secret token for REST API Webhook verification |
 
-### Lead Acquisition Channels & Scraping Mechanics
-1. **Multi-Source Web & LinkedIn Prospecting:**
-   - **LinkedIn Business Profile Scraper:** Queries `site:linkedin.com/in/` to extract verified coach/consultant titles, names, and profile URLs.
-   - **Direct Company Site HTML Scraper:** Scrapes target company homepages to extract `mailto:` links and contact emails directly.
-   - **Coaching Search Indexes:** Scrapes niche web directories matching requested location parameters.
-2. **Google Sheets Integration:** Synchronizes leads from public spreadsheet URLs with full two-way status write-back.
-3. **AI Prospecting Engine:** Generates realistic prospect datasets using OpenAI, Anthropic Claude, or Google Gemini.
-
 ### REST API Webhook Endpoints
 - **POST `/wp-json/closeclient-outreach/v1/webhook`**: Inbound email reply processor. Accepts `email`, `reply_content`, and `X-CC-Token` header.
 - **POST `/wp-json/closeclient-outreach/v1/sync`**: Trigger Google Sheets synchronization remotely.
 
 ---
 
-## 4. Google Sheets Two-Way Apps Script Webhook
+## 5. Google Sheets Two-Way Apps Script Webhook
 
-Paste this Web App script into Google Sheets (*Extensions > Apps Script*) to enable automated write-back when leads reply or change status:
+Paste this Web App script into Google Sheets (*Extensions > Apps Script*) to enable automated write-back when leads reply, change status, or get discovered:
 
 ```javascript
 function doPost(e) {
@@ -112,6 +115,6 @@ function doPost(e) {
 
 ---
 
-## 5. License & Credits
+## 6. License & Credits
 
 GPL-2.0+ License. Developed by CloseClient Engineering.
