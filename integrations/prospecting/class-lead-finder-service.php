@@ -89,7 +89,7 @@ class Lead_Finder_Service {
 
         $added_prospects = array();
 
-        // Database deduplication and active domain validation loop until $quantity new leads are added
+        // Database deduplication, active domain validation, and AI Lead Quality Fit Scoring
         foreach ($discovered as $item) {
             if ($leads_created >= $quantity) break;
 
@@ -112,13 +112,28 @@ class Lead_Finder_Service {
             // Check database if lead already exists by email
             $existing = Lead::get_by_email($email);
             if ($existing) {
-                // If lead exists, skip and continue searching to fulfill quantity
                 Activity_Log::log('lead_prospect_skipped', $existing['id'], 'Skipped duplicate prospect: ' . $email);
                 continue;
             }
 
-            // Insert new unique lead
+            // Calculate AI Quality Fit Score (0-100)
+            $score_res = AI_Service::score_lead($item);
+            $fit_score = isset($score_res['score']) ? intval($score_res['score']) : 75;
+            $fit_reason = isset($score_res['reasoning']) ? sanitize_text_field($score_res['reasoning']) : 'Qualified coaching lead';
+
+            // Require minimum fit score of 60 for high-quality leads
+            if ($fit_score < 60) {
+                Activity_Log::log('lead_prospect_low_quality', 0, sprintf('Skipped low quality fit prospect (%d/100): %s', $fit_score, $email));
+                continue;
+            }
+
+            $item['fit_score'] = $fit_score;
+            $item['fit_reason'] = $fit_reason;
+
+            // Insert new unique high-quality lead
             $source_val = !empty($item['lead_source']) ? sanitize_text_field($item['lead_source']) : 'Internet Prospecting Search';
+            $lead_notes = sprintf("Quality Fit Score: %d/100 (%s). Notes: %s", $fit_score, $fit_reason, isset($item['notes']) ? $item['notes'] : '');
+
             $lead_id = Lead::insert(array(
                 'lead_id'      => 'FIND_' . strtoupper(wp_generate_password(6, false)),
                 'first_name'   => sanitize_text_field(isset($item['first_name']) ? $item['first_name'] : ''),
@@ -129,7 +144,7 @@ class Lead_Finder_Service {
                 'niche'        => sanitize_text_field(isset($item['niche']) ? $item['niche'] : $industry),
                 'location'     => sanitize_text_field(isset($item['location']) ? $item['location'] : $location),
                 'status'       => 'New Lead',
-                'notes'        => sanitize_text_field(isset($item['notes']) ? $item['notes'] : ''),
+                'notes'        => $lead_notes,
                 'lead_source'  => $source_val,
             ));
 
