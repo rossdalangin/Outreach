@@ -39,9 +39,22 @@ $all_statuses = Status_Workflow::get_all_statuses();
         </form>
     </div>
 
+    <!-- Bulk Actions Controls -->
+    <div class="alignleft actions bulkactions" style="margin-bottom:10px;">
+        <select id="cc-bulk-leads-action">
+            <option value="">-- Bulk Actions --</option>
+            <option value="delete">Delete Selected</option>
+            <option value="draft">Generate AI Drafts</option>
+            <option value="status_ready">Set Status: Ready for First Contact</option>
+            <option value="status_dnc">Set Status: Do Not Contact</option>
+        </select>
+        <button id="cc-btn-apply-bulk-leads" class="button action">Apply to Selected</button>
+    </div>
+
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
+                <td class="manage-column column-cb check-column"><input type="checkbox" id="cc-select-all-leads"></td>
                 <th>Lead ID</th>
                 <th>Name</th>
                 <th>Company</th>
@@ -56,6 +69,7 @@ $all_statuses = Status_Workflow::get_all_statuses();
             <?php if (!empty($leads)): ?>
                 <?php foreach ($leads as $l): ?>
                     <tr>
+                        <th scope="row" class="check-column"><input type="checkbox" class="cc-lead-checkbox" value="<?php echo esc_attr($l['id']); ?>"></th>
                         <td><code><?php echo esc_html($l['lead_id'] ? $l['lead_id'] : '#' . $l['id']); ?></code></td>
                         <td><strong><?php echo esc_html($l['first_name'] . ' ' . $l['last_name']); ?></strong></td>
                         <td><?php echo esc_html($l['company_name']); ?></td>

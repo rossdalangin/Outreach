@@ -10,9 +10,21 @@ $queue_items = Queue::query(array('number' => 50));
     <h1>Outreach Queue & Review</h1>
     <p>Review AI-generated personalized outreach drafts before sending to prospects.</p>
 
+    <!-- Bulk Actions Controls -->
+    <div class="alignleft actions bulkactions" style="margin-bottom:10px;">
+        <select id="cc-bulk-queue-action">
+            <option value="">-- Bulk Actions --</option>
+            <option value="approve">Approve Selected</option>
+            <option value="send">Send Selected</option>
+            <option value="delete">Delete Selected</option>
+        </select>
+        <button id="cc-btn-apply-bulk-queue" class="button action">Apply to Selected</button>
+    </div>
+
     <table class="wp-list-table widefat fixed striped">
         <thead>
             <tr>
+                <td class="manage-column column-cb check-column"><input type="checkbox" id="cc-select-all-queue"></td>
                 <th>ID</th>
                 <th>Recipient</th>
                 <th>Type</th>
@@ -27,6 +39,7 @@ $queue_items = Queue::query(array('number' => 50));
                 <?php foreach ($queue_items as $item): ?>
                     <?php $lead = Lead::get($item['lead_id']); ?>
                     <tr>
+                        <th scope="row" class="check-column"><input type="checkbox" class="cc-queue-checkbox" value="<?php echo esc_attr($item['id']); ?>"></th>
                         <td>#<?php echo esc_html($item['id']); ?></td>
                         <td>
                             <strong><?php echo esc_html($lead ? $lead['first_name'] . ' ' . $lead['last_name'] : 'Unknown'); ?></strong><br>

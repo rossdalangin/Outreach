@@ -12,9 +12,19 @@ $campaigns = Campaign::query();
 
     <p>Organize lead segments and target specific niches with tailored outreach settings.</p>
 
+    <!-- Bulk Actions Controls -->
+    <div class="alignleft actions bulkactions" style="margin-bottom:10px;">
+        <select id="cc-bulk-campaigns-action">
+            <option value="">-- Bulk Actions --</option>
+            <option value="delete">Delete Selected</option>
+        </select>
+        <button id="cc-btn-apply-bulk-campaigns" class="button action">Apply to Selected</button>
+    </div>
+
     <table class="wp-list-table widefat fixed striped" style="margin-top:15px;">
         <thead>
             <tr>
+                <td class="manage-column column-cb check-column"><input type="checkbox" id="cc-select-all-campaigns"></td>
                 <th>ID</th>
                 <th>Campaign Name</th>
                 <th>Target Niche</th>
@@ -26,6 +36,7 @@ $campaigns = Campaign::query();
             <?php if (!empty($campaigns)): ?>
                 <?php foreach ($campaigns as $camp): ?>
                     <tr>
+                        <th scope="row" class="check-column"><input type="checkbox" class="cc-campaign-checkbox" value="<?php echo esc_attr($camp['id']); ?>"></th>
                         <td>#<?php echo esc_html($camp['id']); ?></td>
                         <td><strong><?php echo esc_html($camp['name']); ?></strong></td>
                         <td><span class="cc-badge"><?php echo esc_html($camp['target_niche']); ?></span></td>

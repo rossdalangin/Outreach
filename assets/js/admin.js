@@ -328,6 +328,173 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // Checkbox "Select All" Toggles
+    $('#cc-select-all-leads').on('change', function() {
+        $('.cc-lead-checkbox').prop('checked', $(this).is(':checked'));
+    });
+    $('#cc-select-all-queue').on('change', function() {
+        $('.cc-queue-checkbox').prop('checked', $(this).is(':checked'));
+    });
+    $('#cc-select-all-campaigns').on('change', function() {
+        $('.cc-campaign-checkbox').prop('checked', $(this).is(':checked'));
+    });
+    $('#cc-select-all-logs').on('change', function() {
+        $('.cc-log-checkbox').prop('checked', $(this).is(':checked'));
+    });
+
+    // Apply Bulk Lead Actions
+    $('#cc-btn-apply-bulk-leads').on('click', function(e) {
+        e.preventDefault();
+        var action = $('#cc-bulk-leads-action').val();
+        var selectedIds = $('.cc-lead-checkbox:checked').map(function() { return $(this).val(); }).get();
+
+        if (!action) {
+            alert('Please select a bulk action.');
+            return;
+        }
+        if (selectedIds.length === 0) {
+            alert('Please select at least one lead record.');
+            return;
+        }
+
+        if (action === 'delete') {
+            if (!confirm('Are you sure you want to delete ' + selectedIds.length + ' selected lead records?')) return;
+            $.post(ccOutreachVars.ajax_url, {
+                action: 'cc_outreach_ajax_action',
+                sub_action: 'bulk_delete_leads',
+                ids: selectedIds,
+                nonce: ccOutreachVars.nonce
+            }, function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            });
+        } else if (action === 'status_ready' || action === 'status_dnc') {
+            var newStatus = (action === 'status_ready') ? 'Ready for First Contact' : 'Do Not Contact';
+            $.post(ccOutreachVars.ajax_url, {
+                action: 'cc_outreach_ajax_action',
+                sub_action: 'bulk_status_leads',
+                ids: selectedIds,
+                status: newStatus,
+                nonce: ccOutreachVars.nonce
+            }, function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.data);
+                }
+            });
+        } else if (action === 'draft') {
+            alert('Generating AI drafts for ' + selectedIds.length + ' leads...');
+            var completed = 0;
+            $.each(selectedIds, function(i, leadId) {
+                $.post(ccOutreachVars.ajax_url, {
+                    action: 'cc_outreach_ajax_action',
+                    sub_action: 'generate_draft',
+                    lead_id: leadId,
+                    nonce: ccOutreachVars.nonce
+                }, function() {
+                    completed++;
+                    if (completed === selectedIds.length) {
+                        alert('All AI drafts generated successfully!');
+                        location.reload();
+                    }
+                });
+            });
+        }
+    });
+
+    // Apply Bulk Queue Actions
+    $('#cc-btn-apply-bulk-queue').on('click', function(e) {
+        e.preventDefault();
+        var action = $('#cc-bulk-queue-action').val();
+        var selectedIds = $('.cc-queue-checkbox:checked').map(function() { return $(this).val(); }).get();
+
+        if (!action) {
+            alert('Please select a bulk queue action.');
+            return;
+        }
+        if (selectedIds.length === 0) {
+            alert('Please select at least one queue item.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to execute bulk action "' + action + '" on ' + selectedIds.length + ' items?')) return;
+
+        $.post(ccOutreachVars.ajax_url, {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'bulk_queue_action',
+            queue_action: action,
+            ids: selectedIds,
+            nonce: ccOutreachVars.nonce
+        }, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
+    // Apply Bulk Campaign Actions
+    $('#cc-btn-apply-bulk-campaigns').on('click', function(e) {
+        e.preventDefault();
+        var action = $('#cc-bulk-campaigns-action').val();
+        var selectedIds = $('.cc-campaign-checkbox:checked').map(function() { return $(this).val(); }).get();
+
+        if (!action || selectedIds.length === 0) {
+            alert('Please select campaign records and a bulk action.');
+            return;
+        }
+
+        if (!confirm('Delete ' + selectedIds.length + ' selected campaigns?')) return;
+
+        $.post(ccOutreachVars.ajax_url, {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'bulk_delete_campaigns',
+            ids: selectedIds,
+            nonce: ccOutreachVars.nonce
+        }, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
+    // Apply Bulk Log Actions
+    $('#cc-btn-apply-bulk-logs').on('click', function(e) {
+        e.preventDefault();
+        var action = $('#cc-bulk-logs-action').val();
+        var selectedIds = $('.cc-log-checkbox:checked').map(function() { return $(this).val(); }).get();
+
+        if (!action || selectedIds.length === 0) {
+            alert('Please select log records to delete.');
+            return;
+        }
+
+        $.post(ccOutreachVars.ajax_url, {
+            action: 'cc_outreach_ajax_action',
+            sub_action: 'bulk_delete_logs',
+            ids: selectedIds,
+            nonce: ccOutreachVars.nonce
+        }, function(response) {
+            if (response.success) {
+                alert(response.data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + response.data);
+            }
+        });
+    });
+
     // Quick Status Dropdown
     $(document).on('change', '.cc-select-quick-status', function() {
         var leadId = $(this).data('lead-id');

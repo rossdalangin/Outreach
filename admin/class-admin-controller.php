@@ -274,6 +274,78 @@ class Admin_Controller {
                 wp_send_json_success(__('Lead deleted.', 'closeclient-outreach'));
                 break;
 
+            case 'bulk_delete_leads':
+                $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+                if (!empty($ids)) {
+                    global $wpdb;
+                    $table = Lead::get_table_name();
+                    $id_placeholders = implode(',', array_fill(0, count($ids), '%d'));
+                    $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE id IN ($id_placeholders)", $ids));
+                    Activity_Log::log('bulk_leads_deleted', 0, sprintf('Deleted %d lead records', count($ids)));
+                }
+                wp_send_json_success(array('count' => count($ids), 'message' => sprintf(__('%d leads deleted.', 'closeclient-outreach'), count($ids))));
+                break;
+
+            case 'bulk_status_leads':
+                $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+                $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+                if (!empty($ids) && !empty($status)) {
+                    global $wpdb;
+                    $table = Lead::get_table_name();
+                    $id_placeholders = implode(',', array_fill(0, count($ids), '%d'));
+                    $params = array_merge(array($status), $ids);
+                    $wpdb->query($wpdb->prepare("UPDATE $table SET status = %s WHERE id IN ($id_placeholders)", $params));
+                    Activity_Log::log('bulk_status_updated', 0, sprintf('Updated status to %s for %d leads', $status, count($ids)));
+                }
+                wp_send_json_success(array('count' => count($ids), 'message' => sprintf(__('Status updated for %d leads.', 'closeclient-outreach'), count($ids))));
+                break;
+
+            case 'bulk_queue_action':
+                $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+                $bulk_action = isset($_POST['queue_action']) ? sanitize_text_field($_POST['queue_action']) : '';
+                if (!empty($ids) && !empty($bulk_action)) {
+                    global $wpdb;
+                    $table = Queue::get_table_name();
+                    $id_placeholders = implode(',', array_fill(0, count($ids), '%d'));
+
+                    if ($bulk_action === 'approve') {
+                        $params = array_merge(array('approved'), $ids);
+                        $wpdb->query($wpdb->prepare("UPDATE $table SET status = %s WHERE id IN ($id_placeholders)", $params));
+                    } elseif ($bulk_action === 'delete') {
+                        $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE id IN ($id_placeholders)", $ids));
+                    } elseif ($bulk_action === 'send') {
+                        foreach ($ids as $qid) {
+                            Email_Service::send_email($qid);
+                        }
+                    }
+                    Activity_Log::log('bulk_queue_processed', 0, sprintf('Executed %s on %d queue items', $bulk_action, count($ids)));
+                }
+                wp_send_json_success(array('count' => count($ids), 'message' => sprintf(__('Bulk queue action executed for %d items.', 'closeclient-outreach'), count($ids))));
+                break;
+
+            case 'bulk_delete_campaigns':
+                $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+                if (!empty($ids)) {
+                    global $wpdb;
+                    $table = Campaign::get_table_name();
+                    $id_placeholders = implode(',', array_fill(0, count($ids), '%d'));
+                    $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE id IN ($id_placeholders)", $ids));
+                    Activity_Log::log('bulk_campaigns_deleted', 0, sprintf('Deleted %d campaigns', count($ids)));
+                }
+                wp_send_json_success(array('count' => count($ids), 'message' => sprintf(__('%d campaigns deleted.', 'closeclient-outreach'), count($ids))));
+                break;
+
+            case 'bulk_delete_logs':
+                $ids = isset($_POST['ids']) && is_array($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+                if (!empty($ids)) {
+                    global $wpdb;
+                    $table = Activity_Log::get_table_name();
+                    $id_placeholders = implode(',', array_fill(0, count($ids), '%d'));
+                    $wpdb->query($wpdb->prepare("DELETE FROM $table WHERE id IN ($id_placeholders)", $ids));
+                }
+                wp_send_json_success(array('count' => count($ids), 'message' => sprintf(__('%d log records cleared.', 'closeclient-outreach'), count($ids))));
+                break;
+
             case 'create_campaign':
                 $name   = sanitize_text_field($_POST['name']);
                 $niche  = sanitize_text_field($_POST['target_niche']);
