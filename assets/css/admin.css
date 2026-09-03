@@ -118,15 +118,21 @@
 
 .cc-modal-content {
     background-color: #fefefe;
-    margin: 5% auto;
+    margin: 3% auto;
     padding: 25px;
     border-radius: 6px;
-    width: 500px;
+    width: 550px;
     max-width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
+    max-height: 80vh;
+    overflow-y: scroll !important;
     position: relative;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.cc-modal-content form {
+    max-height: calc(80vh - 70px);
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 /* Custom Scrollbar for Modal Popups */
